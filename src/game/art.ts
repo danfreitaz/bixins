@@ -1,0 +1,34 @@
+import type { ItemKey, Species } from "./config";
+const defs = `<defs><radialGradient id="body" cx="35%" cy="25%" r="80%"><stop stop-color="#c3d993"/><stop offset=".65" stop-color="#8bb564"/><stop offset="1" stop-color="#618e48"/></radialGradient><radialGradient id="gold" cx="35%" cy="20%" r="80%"><stop stop-color="#ffedb1"/><stop offset=".65" stop-color="#f1cc69"/><stop offset="1" stop-color="#d49a45"/></radialGradient><radialGradient id="mint" cx="30%" cy="15%" r="85%"><stop stop-color="#e1edc4"/><stop offset=".6" stop-color="#afcda1"/><stop offset="1" stop-color="#7da78b"/></radialGradient><linearGradient id="wood" x2="0" y2="1"><stop stop-color="#eac998"/><stop offset="1" stop-color="#c18d61"/></linearGradient><linearGradient id="water" x2="0" y2="1"><stop stop-color="#c3f4ec"/><stop offset="1" stop-color="#65bbc7"/></linearGradient></defs>`;
+const eyes = (sleep: boolean) =>
+  sleep
+    ? `<path d="M43 66q6 5 12 0m19 0q6 5 12 0" fill="none" stroke="#493f36" stroke-width="3" stroke-linecap="round"/>`
+    : `<ellipse cx="49" cy="64" rx="5.5" ry="8" fill="#403c30"/><ellipse cx="80" cy="64" rx="5.5" ry="8" fill="#403c30"/><circle cx="47" cy="61" r="2" fill="white"/><circle cx="78" cy="61" r="2" fill="white"/>`;
+export function creatureSvg(sp: Species, sleep = false) {
+  const shape =
+    sp === "musguito"
+      ? `<path d="M31 57C14 51 17 32 30 31C28 17 46 12 54 23C63 9 78 14 82 25C99 17 110 31 101 44C119 55 110 76 101 81L27 81Z" fill="#64904b" stroke="#4e7742" stroke-width="2"/><path d="M21 68C19 39 42 33 64 35C94 31 111 52 106 76C103 100 84 107 60 105C34 107 20 93 21 68Z" fill="url(#body)" stroke="#5e8448" stroke-width="2.5"/><path d="M32 43q7-12 14-9M56 34q6-8 13-5M83 40q8-6 13 2" fill="none" stroke="#c4d990" stroke-width="4" stroke-linecap="round"/><path d="M55 28q-6-23 13-23q7 17-13 23" fill="#7ba754"/><path d="M58 24 64 10" stroke="#bdd58a" stroke-width="1.5"/>`
+      : sp === "capinzim"
+        ? `<path d="M31 55Q7 49 14 32Q31 28 40 46M89 48Q99 28 115 34Q123 52 99 58" fill="#e9b64f" stroke="#be8d3f" stroke-width="2"/><path d="M29 47Q36 29 65 29Q93 27 102 53L108 81Q110 111 65 110Q20 110 22 81Z" fill="url(#gold)" stroke="#bc954c" stroke-width="2.5"/><path d="M39 38 31 11 53 29 57 4 68 27 85 8 80 33 101 23 88 45Z" fill="#a0b768" stroke="#80994f" stroke-width="2"/><path d="m46 25 7 14m9-23 1 22m19-14-9 14" stroke="#d0d987" stroke-width="2"/>`
+        : `<path d="M30 47Q12 34 20 19Q36 20 42 37M85 36Q90 17 108 21Q113 42 98 50" fill="#9bbc92" stroke="#6e947b" stroke-width="2"/><path d="M23 71C23 39 45 29 64 29C90 28 111 48 108 77C109 102 88 109 64 110C36 110 19 100 23 71Z" fill="url(#mint)" stroke="#709680" stroke-width="2.5"/><g fill="#eaf0c9" stroke="#91ac8e" stroke-width="1"><path d="m24 60-9-5 6 13m8 18-11 3 12 5m73-34 12-7-5 15m-9 18 14 3-12 6M40 35l-3-10 10 7m38 2 7-10-2 14"/></g><path d="M62 31Q48 16 57 12Q63 9 66 20Q69 5 76 10Q83 17 69 30Q85 20 89 27Q89 35 72 36Z" fill="#d5a2bc" stroke="#ab789c" stroke-width="1.5"/><circle cx="68" cy="27" r="4" fill="#f5db92"/>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">${defs}<ellipse cx="64" cy="115" rx="43" ry="7" fill="#365442" opacity=".14"/><ellipse cx="40" cy="105" rx="13" ry="9" fill="${sp === "capinzim" ? "#c29b4e" : "#72975d"}"/><ellipse cx="88" cy="105" rx="13" ry="9" fill="${sp === "capinzim" ? "#c29b4e" : "#72975d"}"/>${shape}<ellipse cx="64" cy="90" rx="23" ry="13" fill="#fffae4" opacity=".36"/><ellipse cx="36" cy="77" rx="9" ry="5" fill="#ecaa91" opacity=".75"/><ellipse cx="92" cy="77" rx="9" ry="5" fill="#ecaa91" opacity=".75"/>${eyes(sleep)}<path d="M59 78q5 7 11 0" fill="none" stroke="#554734" stroke-width="2.4" stroke-linecap="round"/><path d="m28 83 6 7m65-7-6 7" stroke="#68854e" stroke-width="3" stroke-linecap="round"/></svg>`;
+}
+export function eggSvg(sp: Species) {
+  const colors = {
+    musguito: ["#ecedc9", "#8ca96a"],
+    capinzim: ["#fff0c7", "#d3aa58"],
+    espinim: ["#e5edd5", "#b59ebd"],
+  }[sp];
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">${defs}<ellipse cx="64" cy="112" rx="43" ry="8" fill="#536b42" opacity=".15"/><path d="M18 101Q26 85 64 91Q102 85 111 101L99 116H31Z" fill="#c4a475"/><path d="M26 101 101 111M34 94l56 24m-65-8 76-12" stroke="#ead3a0" stroke-width="3"/><path d="M32 78C31 51 49 16 64 16C82 16 98 54 97 78C98 112 30 111 32 78" fill="${colors[0]}" stroke="${colors[1]}" stroke-width="2.5"/><ellipse cx="49" cy="62" rx="8" ry="12" fill="${colors[1]}" transform="rotate(25 49 62)"/><ellipse cx="80" cy="82" rx="9" ry="7" fill="${colors[1]}"/><circle cx="72" cy="43" r="6" fill="${colors[1]}"/><path d="M44 44q9-18 16-20" fill="none" stroke="white" opacity=".7" stroke-width="5" stroke-linecap="round"/></svg>`;
+}
+export function itemSvg(key: ItemKey) {
+  const shapes = {
+    food: `<path d="M17 66h94l-10 33q-34 15-74 0Z" fill="#db8b74" stroke="#a56251" stroke-width="2"/><ellipse cx="64" cy="65" rx="47" ry="17" fill="#f9c8a5" stroke="#a56251" stroke-width="2"/><ellipse cx="64" cy="65" rx="35" ry="11" fill="#996c42"/><g fill="#e3b771"><circle cx="41" cy="64" r="5"/><circle cx="54" cy="59" r="5"/><circle cx="68" cy="66" r="5"/><circle cx="83" cy="62" r="5"/><circle cx="53" cy="70" r="4"/></g><path d="M50 87q14 8 28 0" fill="none" stroke="#ffd6b0" stroke-width="3"/>`,
+    water: `<path d="M30 45h68l7 52q-40 17-82 0Z" fill="#7dafb2" stroke="#548b94" stroke-width="2"/><ellipse cx="64" cy="45" rx="34" ry="13" fill="#d1e6d9" stroke="#548b94" stroke-width="2"/><ellipse cx="64" cy="47" rx="27" ry="8" fill="url(#water)"/><path d="M47 46q14-7 27 0M54 89q9 6 21 0" fill="none" stroke="#def7e7" stroke-width="3" stroke-linecap="round"/><path d="M69 11q-15 18 0 22q15-4 0-22" fill="#86d7d9"/>`,
+    bed: `<ellipse cx="64" cy="86" rx="51" ry="24" fill="#bb925c" stroke="#9d794c" stroke-width="2"/><ellipse cx="64" cy="78" rx="49" ry="23" fill="#e6c784" stroke="#b39559" stroke-width="2"/><ellipse cx="64" cy="76" rx="35" ry="16" fill="#f8dfaa"/><path d="m26 76 15 9m-6-18 13 6m42-6-10 6m17 6-15 6m-30 6 6-12m10 12 5-11" stroke="#c5a367" stroke-width="2"/><path d="M43 57q23-16 44 0v23q-22-8-44 0Z" fill="#adc7ad"/><path d="M51 60v14m9-17v15m9-16v16m9-13v16" stroke="#d4e2c6" stroke-width="2"/>`,
+    toy: `<circle cx="62" cy="75" r="31" fill="#bb9cc7" stroke="#876f9d" stroke-width="2"/><path d="M39 54q43 10 40 48M51 47q41 20 29 51M32 72q28-23 58 2M32 83q27-21 59 1M38 94q22-21 49 0" fill="none" stroke="#e9d2d9" stroke-width="3"/><path d="M37 96Q5 105 15 83q6-12 20-8" fill="none" stroke="#ae8dbb" stroke-width="5" stroke-linecap="round"/>`,
+  };
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">${defs}<ellipse cx="64" cy="109" rx="48" ry="8" fill="#365442" opacity=".15"/>${shapes[key]}</svg>`;
+}
+export const dataUri = (svg: string) =>
+  `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;

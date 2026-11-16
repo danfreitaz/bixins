@@ -3,6 +3,7 @@ import { db } from "@/lib/db/client";
 import { transact } from "@/lib/game-service";
 import { actionSchema } from "@/game/actions";
 import { z } from "zod";
+import { sameOrigin } from '@/lib/same-origin';
 export const runtime = "nodejs";
 export async function GET() {
   const { data: s } = await auth.getSession();
@@ -19,8 +20,7 @@ export async function GET() {
   );
 }
 export async function POST(req: Request) {
-  const origin = req.headers.get("origin");
-  if (origin && origin !== new URL(req.url).origin)
+  if (!sameOrigin(req))
     return Response.json({ error: "Origem não autorizada." }, { status: 403 });
   const { data: s } = await auth.getSession();
   if (!s?.user)
