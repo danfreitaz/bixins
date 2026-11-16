@@ -12,7 +12,8 @@
 - Concorrência: duas requisições com a mesma chave compraram um único objeto. Oito compras simultâneas de C$ 80, com saldo C$ 600, produziram sete compras e uma recusa, com saldo final C$ 40. Uma conta não conseguiu posicionar um objeto pertencente à outra.
 - Correções encontradas no teste real: cadastrar as origens locais no Neon Auth; validar o host público em vez do hostname interno do Next; fazer as leituras autenticadas do teste pelo contexto do navegador, que mantém os cookies seguros.
 - Contas fictícias e credenciais do teste ficam somente no ambiente de desenvolvimento; arquivos locais em `test-results/` estão ignorados pelo Git. Os testes são retomáveis para reutilizar as contas já criadas.
-- Deploy: variáveis criptografadas de preview configuradas após autorização; publicação privada em andamento.
+- Deploy privado: **READY**, confirmado pela API e pelos logs da Vercel. URL: https://bixins-f3hh0zzpe-danilo-freitas-souza.vercel.app/ . Ambiente `staging`, commit de código `bf7ffad35490d998ea481453724504dc7e820b27`; build remoto concluído em 28 segundos. Variáveis criptografadas configuradas e domínios reconhecidos pelo Neon Auth.
+- Limite da verificação remota: a revisão automática bloqueou `web_fetch_vercel_url`, pois o conector criaria/reutilizaria um link compartilhável temporário. Nenhum link desse tipo foi criado por esta tentativa. A proteção da prévia foi preservada; o build publicado foi confirmado, mas o fluxo HTTP autenticado na URL remota não foi repetido.
 - GitHub: sem repositório remoto conectado; há commits locais.
 
 A entrega é uma primeira fatia jogável, não o MVP 1.0 completo. Os sistemas futuros permanecem documentados no roteiro.

@@ -52,6 +52,6 @@ O script `scripts/browser-check.cjs` usa Playwright e Edge para verificações v
 
 O projeto Neon `bixins` e sua ramificação `development` foram criados. A migração e a autenticação gerenciada foram preparadas nessa ramificação. Segredos não estão no repositório nem no bundle do navegador.
 
-O projeto Vercel `bixins` também foi criado, com proteção de acesso. As variáveis criptografadas foram configuradas após autorização explícita do criador. A publicação privada está em andamento. A conexão a um repositório GitHub também não foi concluída; o código está versionado localmente.
+O projeto Vercel `bixins` também foi criado, com proteção de acesso. As variáveis criptografadas foram configuradas após autorização explícita do criador. A prévia privada foi publicada: https://bixins-f3hh0zzpe-danilo-freitas-souza.vercel.app/ . A Vercel confirmou o estado READY; o acesso requer sua conta Vercel. A conexão a um repositório GitHub também não foi concluída; o código está versionado localmente.
 
 Consulte [verificações](docs/VERIFICATION.md) para o estado real da entrega. Esta é a versão 0.1, não o MVP 1.0 completo.
