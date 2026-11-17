@@ -43,3 +43,12 @@ A entrega é uma primeira fatia jogável, não o MVP 1.0 completo. Os sistemas f
 - Checagem inicial de cotas sem avisos e plano Neon confirmado por API; contadores e limite da consulta Vercel estão em MONITORING.md. Sem agendamento, plano pago ou alteração de cobrança.
 - Revisão automática interrompeu uma tentativa de build por limite de uso (não por julgar a ação insegura). Após o usuário pedir continuidade, a mesma ação foi retomada pela revisão normal, sem contornar a aprovação.
 - Publicação privada 1.0: **READY**, confirmada pela API da Vercel. Ambiente staging, commit de código 6f907733c005acc78630b0dc9d2586ed6e751cdc. URL: https://bixins-bx030yvx3-danilo-freitas-souza.vercel.app/ . Alias estável: https://bixins-danilo-freitas-souza.vercel.app/ . Origem nova registrada no Neon Auth. Servidor local temporário encerrado após os testes. A proteção e o limite de verificação HTTP remota descritos nas entregas anteriores permanecem.
+
+## Publicação no GitHub e abertura ao público
+
+- O criador solicitou explicitamente a publicação no GitHub e acesso ao site para todos.
+- Repositório criado pelo usuário: https://github.com/danfreitaz/bixins . O histórico local foi enviado à branch main, com origin configurado e acompanhamento remoto.
+- Auditoria prévia verificou 120 blobs textuais do histórico e não detectou os padrões de credenciais examinados. Arquivos .env locais, contas de QA, backups e capturas não são versionados; somente .env.example com configuração de exemplo é incluído.
+- A proteção SSO da Vercel foi removida por autorização explícita. Requisição anônima ao endereço estável respondeu HTTP 200, com a página BIXINS e sem login Vercel. O login do jogo e a autorização por proprietário continuam obrigatórios para acessar o progresso.
+- Endereço público: https://bixins-danilo-freitas-souza.vercel.app/ . O estado anterior de distribuição privada registrado acima é histórico; não se aplica mais ao acesso atual.
+- O upload ao GitHub não configurou integração automática de deploy. A aplicação pública continua na versão 1.0 já validada e publicada na Vercel.
