@@ -26,6 +26,7 @@ export function eggSvg(sp: Species) {
 }
 export function itemSvg(key: ItemKey) {
   const shapes: Partial<Record<ItemKey, string>> = {
+    nest: `<path d="M14 84Q22 63 64 66Q106 63 115 84L105 107Q64 124 23 107Z" fill="#b89265" stroke="#92724e" stroke-width="2"/><ellipse cx="64" cy="82" rx="45" ry="20" fill="#e4c88c"/><ellipse cx="64" cy="81" rx="33" ry="12" fill="#bda875"/><path d="m22 91 80 13m-77-2 75-10m-65-20 12 10m42-10-13 10" stroke="#f4dfaa" stroke-width="3"/><path d="M62 57C30 38 34 17 49 25L64 39 79 25C96 16 101 41 65 57Z" fill="#d9999a"/><path d="m26 72-9-11 15 3m61 8 17-11-7 16" fill="#8caf78"/>`,
     food: `<path d="M17 66h94l-10 33q-34 15-74 0Z" fill="#db8b74" stroke="#a56251" stroke-width="2"/><ellipse cx="64" cy="65" rx="47" ry="17" fill="#f9c8a5" stroke="#a56251" stroke-width="2"/><ellipse cx="64" cy="65" rx="35" ry="11" fill="#996c42"/><g fill="#e3b771"><circle cx="41" cy="64" r="5"/><circle cx="54" cy="59" r="5"/><circle cx="68" cy="66" r="5"/><circle cx="83" cy="62" r="5"/><circle cx="53" cy="70" r="4"/></g><path d="M50 87q14 8 28 0" fill="none" stroke="#ffd6b0" stroke-width="3"/>`,
     water: `<path d="M30 45h68l7 52q-40 17-82 0Z" fill="#7dafb2" stroke="#548b94" stroke-width="2"/><ellipse cx="64" cy="45" rx="34" ry="13" fill="#d1e6d9" stroke="#548b94" stroke-width="2"/><ellipse cx="64" cy="47" rx="27" ry="8" fill="url(#water)"/><path d="M47 46q14-7 27 0M54 89q9 6 21 0" fill="none" stroke="#def7e7" stroke-width="3" stroke-linecap="round"/><path d="M69 11q-15 18 0 22q15-4 0-22" fill="#86d7d9"/>`,
     bed: `<ellipse cx="64" cy="86" rx="51" ry="24" fill="#bb925c" stroke="#9d794c" stroke-width="2"/><ellipse cx="64" cy="78" rx="49" ry="23" fill="#e6c784" stroke="#b39559" stroke-width="2"/><ellipse cx="64" cy="76" rx="35" ry="16" fill="#f8dfaa"/><path d="m26 76 15 9m-6-18 13 6m42-6-10 6m17 6-15 6m-30 6 6-12m10 12 5-11" stroke="#c5a367" stroke-width="2"/><path d="M43 57q23-16 44 0v23q-22-8-44 0Z" fill="#adc7ad"/><path d="M51 60v14m9-17v15m9-16v16m9-13v16" stroke="#d4e2c6" stroke-width="2"/>`,
@@ -35,3 +36,35 @@ export function itemSvg(key: ItemKey) {
 }
 export const dataUri = (svg: string) =>
   `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+
+export function portraitSvg(
+  b: import("./types").Bixin,
+  sleep = false,
+  action: "idle" | "eat" | "drink" | "play" = "idle",
+) {
+  let svg = creatureSvg(b.species, sleep, action);
+  const g = b.genome;
+  if (!g) return svg;
+  const tint = (g.primary - 1) * 14;
+  svg = svg
+    .replace(
+      'viewBox="0 0 128 128">',
+      `viewBox="0 0 128 128"><defs><filter id="gene-tint"><feColorMatrix type="hueRotate" values="${tint}"/></filter></defs><g filter="url(#gene-tint)">`,
+    )
+    .replace("</svg>", "</g></svg>");
+  const marks =
+    g.pattern === "pintado"
+      ? '<g fill="#fff0d0" opacity=".65"><circle cx="44" cy="92" r="3"/><circle cx="52" cy="98" r="2.5"/><circle cx="84" cy="93" r="3"/></g>'
+      : g.pattern === "listrado"
+        ? '<path d="m40 89 7 4m-4 3 6 3m30-10 7 4m-9 3 7 3" stroke="#fff0d0" stroke-width="3" opacity=".7" stroke-linecap="round"/>'
+        : "";
+  const crest =
+    g.crest === 2
+      ? '<path d="m58 22 5-8 5 8" fill="#f3d49b" stroke="#9d8058" stroke-width="1"/>'
+      : "";
+  const aurora =
+    b.variant === "aurora"
+      ? '<g fill="#e5c9fa" stroke="#a080b2"><path d="m19 33 2 6 6 2-6 2-2 6-2-6-6-2 6-2Z"/><path d="m106 56 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"/></g>'
+      : "";
+  return svg.replace("</svg>", `${marks}${crest}${aurora}</svg>`);
+}

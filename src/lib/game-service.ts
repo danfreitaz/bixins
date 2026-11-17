@@ -22,21 +22,24 @@ export async function transact(owner: string, action: Action, key: string) {
         throw Error("Chave de ação já utilizada.");
       return { state: g, serverTime: now };
     }
-    if (action.type !== "sync") {
+    {
       const [rate] =
-        await tx`SELECT count(*)::int AS count FROM game_actions WHERE owner_id=${owner} AND created_at>now()-interval '1 minute' AND kind<>'sync'`;
-      if (rate.count >= 45)
+        await tx`SELECT count(*) FILTER (WHERE kind='sync')::int AS sync_count, count(*) FILTER (WHERE kind<>'sync')::int AS count FROM game_actions WHERE owner_id=${owner} AND created_at>now()-interval '1 minute'`;
+      if (action.type === "sync" ? rate.sync_count >= 12 : rate.count >= 45)
         throw Error(
           "Muitas ações juntas. Respire um pouquinho e tente novamente.",
         );
     }
+    const recordedLedger = new Set(g.ledger.map((entry) => entry.id));
     simulate(g, now);
     applyAction(g, action, now, key, randomInt(1, 2147483647));
     g.version++;
     g.ledger = g.ledger.slice(0, 100);
     await tx`UPDATE properties SET state=${tx.json(g)},credits=${g.credits},version=${g.version},updated_at=now() WHERE owner_id=${owner}`;
     await tx`INSERT INTO game_actions(owner_id,idempotency_key,kind) VALUES(${owner},${key},${action.type})`;
-    for (const entry of g.ledger)
+    for (const entry of g.ledger.filter(
+      (entry) => !recordedLedger.has(entry.id),
+    ))
       await tx`INSERT INTO economy_ledger(owner_id,reference,delta,balance_after,kind) VALUES(${owner},${entry.id},${entry.delta},${entry.balance},${entry.kind}) ON CONFLICT(owner_id,reference) DO NOTHING`;
     return { state: g, serverTime: now };
   });

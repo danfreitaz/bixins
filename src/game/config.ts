@@ -22,6 +22,14 @@ export const CONFIG = {
   babyHours: 6,
   adultHours: 24,
   veteranHours: 120,
+  socialSeconds: 300,
+  breedingHours: 24,
+  nestingSeconds: 600,
+  breedingAffinity: 30,
+  breedingFood: 12,
+  inheritParentChance: 0.45,
+  specialVariantChance: 0.005,
+  daySeconds: 14400,
 } as const;
 export const needLabels = {
   health: "Saúde",
@@ -186,6 +194,17 @@ const item = (
   ...v,
 });
 export const items = {
+  nest: item({
+    name: "Ninho aconchegante",
+    category: "Reprodução",
+    price: 550,
+    width: 2,
+    height: 2,
+    capacity: 2,
+    charm: 5,
+    description:
+      "Um casal escolhe se aconchegar aqui. Prepare pela ficha de um adulto.",
+  }),
   food: item({
     name: "Comedouro",
     category: "Alimentação",

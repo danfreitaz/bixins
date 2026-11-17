@@ -12,3 +12,7 @@ Cada entrega será verificada por TypeScript, build, testes do motor e integraç
 ## Entrega conjunta 0.2
 
 Fases 4 e 5 implementadas: catálogo de 16 objetos, expansão, missões, expedições, nove espécies, ovos e transferência NPC. Ver docs/PHASES_4_5.md para escopo e validação. As próximas fases são 6 (relações/reprodução) e 7 (polimento e lançamento).
+
+## Entrega conjunta 1.0
+
+Fases 6 e 7 implementadas: relações autônomas, afinidade, humor, ninho, reprodução com condições/cooldown, genética e genealogia; ciclo ambiental, acessibilidade, bateria, recuperação de erros, revisão de segurança e operação de cotas. O MVP é destinado ao piloto fechado na prévia privada existente. Ver docs/PHASES_6_7.md e docs/VERIFICATION.md. Expansões pós-MVP continuam fora desta entrega.

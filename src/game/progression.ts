@@ -9,8 +9,9 @@ import {
   expeditionChances,
 } from "./config";
 import type { Bixin, Game } from "./types";
+import { initializeColony } from "./colony";
 export function migrateGame(g: Game): Game {
-  g.schemaVersion = 2;
+  g.schemaVersion = 3;
   g.xp ??= 0;
   g.level ??= g.width > 20 ? 2 : 1;
   g.missions ??= {};
@@ -20,6 +21,7 @@ export function migrateGame(g: Game): Game {
   g.incomeCycles ??= 0;
   g.transfers ??= [];
   g.discoveryCounts ??= {};
+  initializeColony(g);
   for (const i of g.items) {
     i.level ??= 1;
     i.rotation ??= 0;
@@ -131,6 +133,18 @@ export function expeditionReward(region: RegionKey, roll: number) {
     : { credits: 25, item: "flowers" as const };
 }
 export const missions = {
+  friendship: {
+    title: "Um laço de verdade",
+    description: "Observe a primeira amizade da colônia.",
+    reward: 100,
+    xp: 20,
+  },
+  family: {
+    title: "Uma história em família",
+    description: "Receba o primeiro ovo preparado por um casal.",
+    reward: 150,
+    xp: 30,
+  },
   welcome: {
     title: "Um cantinho preparado",
     description: "Instale os quatro objetos do kit.",
@@ -190,6 +204,14 @@ export type MissionKey = keyof typeof missions;
 export function updateMissions(g: Game, now: number) {
   migrateGame(g);
   const goals: Record<MissionKey, boolean> = {
+    friendship: Object.values(g.relationships ?? {}).some(
+      (r) => !!r.friendshipAt,
+    ),
+    family: [
+      ...g.bixins,
+      ...(g.transfers ?? []).map((t) => t.bixin),
+      ...g.eggs,
+    ].some((b) => !!b.parentA && !!b.parentB),
     welcome: ["kit-0", "kit-1", "kit-2", "kit-3"].every((id) =>
       g.items.some((i) => i.id === id && i.placed),
     ),

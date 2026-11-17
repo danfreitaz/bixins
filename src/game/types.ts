@@ -16,6 +16,38 @@ export type Bixin = Point & {
   parentA?: string;
   parentB?: string;
   variant?: string;
+  genderLabel?: string;
+  genome?: Genome;
+  lastBredAt?: number;
+  partnerId?: string;
+};
+export type Genome = {
+  primary: number;
+  secondary: number;
+  pattern: "liso" | "pintado" | "listrado";
+  size: "pequeno" | "médio" | "fofucho";
+  ears: number;
+  tail: number;
+  crest: number;
+  temperamentBias: number;
+  energyBias: number;
+};
+export type Relationship = {
+  a: string;
+  b: string;
+  affinity: number;
+  interactions: number;
+  lastAt: number;
+  friendshipAt?: number;
+  lastKind?: string;
+};
+export type Nest = {
+  itemId: string;
+  a: string;
+  b: string;
+  preparedAt: number;
+  settledAt: number | null;
+  seed: number;
 };
 export type OwnedItem = Point & {
   id: string;
@@ -31,8 +63,19 @@ export type Egg = Point & {
   readyAt: number | null;
   first: boolean;
   origin?: RegionKey;
+  parentA?: string;
+  parentB?: string;
+  genome?: Genome;
+  traits?: string[];
+  variant?: string;
+  role?: "A" | "B";
 };
-export type GameEvent = { id: string; at: number; text: string };
+export type GameEvent = {
+  id: string;
+  at: number;
+  text: string;
+  milestone?: boolean;
+};
 export type Ledger = {
   id: string;
   at: number;
@@ -82,4 +125,7 @@ export type Game = {
   incomeCycles?: number;
   transfers?: Transfer[];
   discoveryCounts?: Partial<Record<Species, number>>;
+  relationships?: Record<string, Relationship>;
+  nest?: Nest | null;
+  milestones?: GameEvent[];
 };

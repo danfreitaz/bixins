@@ -33,6 +33,7 @@ function example(): Game {
 export default function Demo() {
   const [game, setGame] = useState<Game | null>(null);
   const [reduced, setReduced] = useState(false);
+  const [weather, setWeather] = useState("auto");
   useEffect(() => {
     setGame(example());
     const id = setInterval(
@@ -70,6 +71,19 @@ export default function Demo() {
         <button className="button small" onClick={() => setReduced(!reduced)}>
           {reduced ? "Ativar animações" : "Reduzir movimentos"}
         </button>
+        <label className="demo-weather">
+          Ambiente da demonstração
+          <select
+            aria-label="Ambiente da demonstração"
+            value={weather}
+            onChange={(e) => setWeather(e.target.value)}
+          >
+            <option value="auto">Ciclo atual</option>
+            <option value="day">Dia</option>
+            <option value="night">Noite</option>
+            <option value="rain">Chuvinha</option>
+          </select>
+        </label>
         <button
           className="button small"
           onClick={() =>
@@ -101,6 +115,15 @@ export default function Demo() {
             onPlace={() => {}}
             onSelect={() => {}}
             reduced={reduced}
+            now={
+              weather === "day"
+                ? 7200000
+                : weather === "night"
+                  ? 12000000
+                  : weather === "rain"
+                    ? 1800000
+                    : game.lastSimulated
+            }
             demo
           />
         )}

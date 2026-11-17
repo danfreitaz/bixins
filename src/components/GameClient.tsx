@@ -25,6 +25,7 @@ import {
   Sun,
 } from "lucide-react";
 import Terrain, { type Placement } from "./Terrain";
+import ColonyPanel, { FamilyCard } from "./ColonyPanel";
 import {
   ConstructionPanel,
   ItemPanel,
@@ -35,6 +36,7 @@ import {
   TransferControls,
 } from "./PhasePanels";
 import { charm, stageOf } from "@/game/progression";
+import { environment } from "@/game/colony";
 import { dimensions } from "@/game/geometry";
 import { authClient } from "@/lib/auth/client";
 import {
@@ -47,7 +49,7 @@ import {
   type ItemKey,
   type Species,
 } from "@/game/config";
-import { creatureSvg, dataUri, eggSvg, itemSvg } from "@/game/art";
+import { creatureSvg, portraitSvg, dataUri, eggSvg, itemSvg } from "@/game/art";
 import type { Bixin, Game } from "@/game/types";
 import type { Action } from "@/game/actions";
 const nav = [
@@ -56,6 +58,7 @@ const nav = [
   { id: "eggs", title: "Ovinhos", icon: Egg },
   { id: "collection", title: "Bixinpédia", icon: BookOpen },
   { id: "diary", title: "Diário", icon: Leaf },
+  { id: "colony", title: "Colônia", icon: Heart },
 ] as const;
 type Tab =
   (typeof nav)[number]["id"] | "settings" | "shop" | "explore" | "missions";
@@ -92,6 +95,7 @@ export default function GameClient() {
     [loading, setLoading] = useState(true),
     [signed, setSigned] = useState(false),
     [pending, setPending] = useState(false),
+    [saveFailed, setSaveFailed] = useState(false),
     [message, setMessage] = useState(""),
     [tab, setTab] = useState<Tab>("home"),
     [placement, setPlacement] = useState<Placement | null>(null),
@@ -101,6 +105,7 @@ export default function GameClient() {
     } | null>(null),
     [reduced, setReduced] = useState(false),
     [sound, setSound] = useState(false),
+    [battery, setBattery] = useState(false),
     [now, setNow] = useState(0),
     [email, setEmail] = useState(""),
     [password, setPassword] = useState(""),
@@ -130,13 +135,15 @@ export default function GameClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action, idempotencyKey: key }),
       });
-      const result = await res.json();
+      let result;
+      try { result = await res.json(); } catch { throw Error("Sua conexão cochilou. Tente novamente para confirmar a ação."); }
       if (!res.ok) {
-        delete retry.current[JSON.stringify(action)];
+        if (res.status < 500) delete retry.current[JSON.stringify(action)];
         if (res.status === 401) setSigned(false);
         throw Error(result.error || "Não foi possível guardar a ação.");
       }
       delete retry.current[JSON.stringify(action)];
+      setSaveFailed(false);
       offset.current = result.serverTime - Date.now();
       setNow(result.serverTime);
       setGame((old) =>
@@ -157,6 +164,7 @@ export default function GameClient() {
       }
       return true;
     } catch (e) {
+      setSaveFailed(true);
       setMessage(
         e instanceof Error
           ? e.message
@@ -174,6 +182,7 @@ export default function GameClient() {
         localStorage.getItem("bixins-reduced") === "true",
     );
     setSound(localStorage.getItem("bixins-sound") === "true");
+    setBattery(localStorage.getItem("bixins-battery") === "true");
     authClient
       .getSession()
       .then(async ({ data, error }) => {
@@ -208,7 +217,10 @@ export default function GameClient() {
         const ok = await act({ type: "sync" }, true);
         failures = ok ? 0 : Math.min(4, failures + 1);
       }
-      timer = setTimeout(sync, CONFIG.syncSeconds * 1000 * 2 ** failures);
+      timer = setTimeout(
+        sync,
+        CONFIG.syncSeconds * 1000 * (battery ? 2 : 1) * 2 ** failures,
+      );
     };
     timer = setTimeout(sync, CONFIG.syncSeconds * 1000);
     const visible = () => {
@@ -222,7 +234,7 @@ export default function GameClient() {
       clearTimeout(timer);
       document.removeEventListener("visibilitychange", visible);
     };
-  }, [signed, act]);
+  }, [signed, act, battery]);
   useEffect(() => {
     const f = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -247,7 +259,7 @@ export default function GameClient() {
           })
         : await authClient.signIn.email({ email, password });
       if (result.error)
-        throw Error(result.error.message || "Confira seu e-mail e sua senha.");
+        throw Error(signup ? "Não foi possível criar a conta. Confira os dados ou tente entrar se já se cadastrou." : "Não foi possível entrar. Confira seu e-mail e sua senha e tente novamente.");
       if (!result.data?.user)
         throw Error("Confira seu e-mail para concluir o cadastro.");
       setSigned(true);
@@ -272,7 +284,7 @@ export default function GameClient() {
       if (e.key !== "Tab" || !panel) return;
       const nodes = Array.from(
         panel.querySelectorAll<HTMLElement>(
-          "button:not(:disabled),a[href],input:not(:disabled)",
+          "button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled)",
         ),
       );
       const first = nodes[0],
@@ -484,7 +496,9 @@ export default function GameClient() {
     : 0;
   const activeEgg = game.eggs.find((e) => e.readyAt);
   return (
-    <main className={`app ${reduced ? "reduced" : ""}`}>
+    <main
+      className={`app ${reduced ? "reduced" : ""} ${battery ? "battery" : ""}`}
+    >
       <header className="topbar">
         <a href="/" aria-label="BIXINS início" className="brand">
           bixins<span>✿</span>
@@ -538,9 +552,13 @@ export default function GameClient() {
             Seu cantinho, <em>do seu jeitinho.</em>
           </h1>
         </div>
-        <span className="save-state">
+        <span className="save-state" role="status">
           <span className={pending ? "sync-dot pending" : "sync-dot"} />
-          {pending ? "Guardando…" : "Progresso guardado"}
+          {pending
+            ? "Guardando…"
+            : saveFailed
+              ? "Ação não confirmada · tente novamente"
+              : "Progresso guardado"}
         </span>
       </div>
       <section className="game-stage">
@@ -632,6 +650,8 @@ export default function GameClient() {
           onPlace={place}
           onSelect={choose}
           reduced={reduced}
+          battery={battery}
+          now={now}
         />
         {!game.bixins.length && !activeEgg && !placement && (
           <div className="first-egg-note">
@@ -661,9 +681,19 @@ export default function GameClient() {
         <div className="season-note">
           <Sun size={17} />
           <span>
-            PRIMEIROS DIAS
+            {environment(now).rain
+              ? "CHUVINHA SEM PRESSA"
+              : environment(now).night
+                ? "BOA NOITE, CANTINHO"
+                : "UM NOVO DIA BIXIN"}
             <br />
-            <strong>Uma nova história começa.</strong>
+            <strong>
+              {environment(now).rain
+                ? "Poças para refletir o céu."
+                : environment(now).night
+                  ? "As histórias também descansam."
+                  : "A vida segue no seu ritmo."}
+            </strong>
           </span>
         </div>
         {birth && (
@@ -727,7 +757,7 @@ export default function GameClient() {
         <div className="bixin-strip">
           {game.bixins.map((b) => (
             <button key={b.id} onClick={() => choose(b.id, "bixin")}>
-              <Art src={dataUri(creatureSvg(b.species))} />
+              <Art src={dataUri(portraitSvg(b))} />
               <span>
                 {b.name}
                 <small>{b.activity}</small>
@@ -845,7 +875,7 @@ export default function GameClient() {
                 <div className="bixin-portrait">
                   <Art
                     src={dataUri(
-                      creatureSvg(bixin.species, bixin.activity === "Dormindo"),
+                      portraitSvg(bixin, bixin.activity === "Dormindo"),
                     )}
                   />
                 </div>
@@ -954,10 +984,16 @@ export default function GameClient() {
                     setTab("home");
                   }}
                 />
-                <p className="fineprint">
-                  Compatibilidade reprodutiva: {bixin.role} · Reprodução em uma
-                  próxima etapa.
-                </p>
+                <FamilyCard game={game} bixin={bixin} />
+                <button
+                  className="button"
+                  onClick={() => {
+                    setSelected(null);
+                    setTab("colony");
+                  }}
+                >
+                  Visitar os laços da colônia
+                </button>
               </>
             ) : selectedItem ? (
               <ItemPanel
@@ -1068,6 +1104,14 @@ export default function GameClient() {
                   </>
                 )}
                 {tab === "collection" && <CollectionPanel game={game} />}
+                {tab === "colony" && (
+                  <ColonyPanel
+                    game={game}
+                    now={now}
+                    pending={pending}
+                    act={act}
+                  />
+                )}
                 {tab === "diary" && (
                   <>
                     <span className="eyebrow">
@@ -1078,25 +1122,33 @@ export default function GameClient() {
                       Nascimentos, pequenas descobertas e carinhos que ficam.
                     </p>
                     <ol className="timeline">
-                      {game.events.map((e) => (
-                        <li key={e.id}>
-                          <span className="timeline-dot">
-                            <Leaf size={13} />
-                          </span>
-                          <div>
-                            <small>
-                              {new Date(e.at).toLocaleString("pt-BR", {
-                                timeZone: "America/Bahia",
-                                day: "2-digit",
-                                month: "short",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                            </small>
-                            <p>{e.text}</p>
-                          </div>
-                        </li>
-                      ))}
+                      {[
+                        ...new globalThis.Map(
+                          [...game.events, ...(game.milestones ?? [])].map(
+                            (e) => [e.id, e] as const,
+                          ),
+                        ).values(),
+                      ]
+                        .sort((a, b) => b.at - a.at)
+                        .map((e) => (
+                          <li key={e.id}>
+                            <span className="timeline-dot">
+                              <Leaf size={13} />
+                            </span>
+                            <div>
+                              <small>
+                                {new Date(e.at).toLocaleString("pt-BR", {
+                                  timeZone: "America/Bahia",
+                                  day: "2-digit",
+                                  month: "short",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </small>
+                              <p>{e.text}</p>
+                            </div>
+                          </li>
+                        ))}
                     </ol>
                     <h3>Créditos do refúgio</h3>
                     {game.ledger.length ? (
@@ -1136,6 +1188,27 @@ export default function GameClient() {
                     <span className="eyebrow">DO SEU JEITINHO</span>
                     <h2>Pequenos ajustes.</h2>
                     <p>Deixe seu cantinho confortável também para você.</p>
+                    <label className="toggle">
+                      <span>
+                        <strong>Economia de bateria</strong>
+                        <small>
+                          Desenho a 12 quadros por segundo, menos partículas e
+                          sincronização a cada dois minutos. Pausa ao ocultar a
+                          aba.
+                        </small>
+                      </span>
+                      <input
+                        type="checkbox"
+                        checked={battery}
+                        onChange={(e) => {
+                          setBattery(e.target.checked);
+                          localStorage.setItem(
+                            "bixins-battery",
+                            String(e.target.checked),
+                          );
+                        }}
+                      />
+                    </label>
                     <label className="toggle">
                       <span>
                         <strong>Sons delicados</strong>
@@ -1191,7 +1264,7 @@ export default function GameClient() {
                       Exportar meu refúgio em JSON
                     </button>
                     <p className="fineprint">
-                      BIXINS · Versão 0.2 · Construção e descobertas. Seus dados
+                      BIXINS · Versão 1.0 · Um cantinho de histórias. Seus dados
                       ficam guardados na sua conta. A exportação serve para
                       consulta.
                     </p>

@@ -33,9 +33,23 @@ export async function POST(req: Request) {
   try {
     if (Number(req.headers.get("content-length") ?? 0) > 4096)
       return Response.json({ error: "Pedido grande demais." }, { status: 413 });
+    if (!req.headers.get("content-type")?.includes("application/json"))
+      return Response.json(
+        { error: "Envie uma ação em JSON." },
+        { status: 415 },
+      );
+    const raw = await req.text();
+    if (new TextEncoder().encode(raw).length > 4096)
+      return Response.json({ error: "Pedido grande demais." }, { status: 413 });
+    let decoded: unknown;
+    try {
+      decoded = JSON.parse(raw);
+    } catch {
+      return Response.json({ error: "Pedido inválido." }, { status: 400 });
+    }
     const body = z
       .object({ action: actionSchema, idempotencyKey: z.uuid() })
-      .parse(await req.json());
+      .parse(decoded);
     const result = await transact(s.user.id, body.action, body.idempotencyKey);
     return Response.json(
       { ...result, state: publicSnapshot(result.state) },

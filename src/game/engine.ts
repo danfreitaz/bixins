@@ -20,6 +20,14 @@ import {
 } from "./geometry";
 import { charm, migrateGame, updateMissions, wellbeing } from "./progression";
 import type { Bixin, Game, Point, OwnedItem } from "./types";
+import {
+  affinity,
+  breedingReason,
+  compatibility,
+  stableRandom,
+  tickColony,
+  wildIdentity,
+} from "./colony";
 export function rng(seed: number) {
   let s = seed >>> 0;
   return () => {
@@ -27,9 +35,11 @@ export function rng(seed: number) {
     return s / 4294967296;
   };
 }
-export function event(g: Game, text: string, at: number) {
+export function event(g: Game, text: string, at: number, milestone = false) {
   g.eventSequence = (g.eventSequence ?? g.events.length) + 1;
-  g.events.unshift({ id: `${g.seed}-${g.eventSequence}`, at, text });
+  const entry = { id: `${g.seed}-${g.eventSequence}`, at, text, milestone };
+  g.events.unshift(entry);
+  if (milestone) g.milestones = [entry, ...(g.milestones ?? [])].slice(0, 200);
   g.events = g.events.slice(0, 200);
 }
 export function createGame(now: number, seed: number): Game {
@@ -66,6 +76,7 @@ export function createGame(now: number, seed: number): Game {
         x: 0,
         y: 0,
         origin: species[sp].regionKey,
+        ...wildIdentity(sp, seed),
       },
     ],
     events: [
@@ -183,6 +194,104 @@ export function validPlacement(
   );
 }
 export function chooseActivity(g: Game, b: Bixin, at: number) {
+  const urgent =
+    b.needs.satiety < 35 ||
+    b.needs.hydration < 35 ||
+    b.needs.energy < 25 ||
+    b.needs.health < 50;
+  const n = g.nest;
+  if (!urgent && n && (n.a === b.id || n.b === b.id)) {
+    const a = g.bixins.find((o) => o.id === n.a),
+      c = g.bixins.find((o) => o.id === n.b);
+    const nest = g.items.find((o) => o.id === n.itemId && o.placed);
+    if (nest && !breedingReason(g, a, c, at)) {
+      if (b.targetId === nest.id && adjacent(nest, b)) {
+        b.path = [];
+        b.activity = "Aconchegando o ninho";
+        return;
+      }
+      const reserved = g.bixins
+        .filter((o) => o.id !== b.id && o.targetId === nest.id)
+        .map((o) => o.path.at(-1) ?? o);
+      const options = accessPoints(nest)
+        .filter((p) => !reserved.some((o) => o.x === p.x && o.y === p.y))
+        .map((p) => ({ p, path: pathfind(g, b, p) }))
+        .filter((o) => o.path.length || (o.p.x === b.x && o.p.y === b.y))
+        .sort((x, y) => x.path.length - y.path.length);
+      if (options[0]) {
+        b.partnerId = undefined;
+        b.targetId = nest.id;
+        b.path = options[0].path;
+        b.activity = "Visitando o ninho";
+        return;
+      }
+    }
+  }
+  if (!urgent && b.partnerId) {
+    const other = g.bixins.find((o) => o.id === b.partnerId);
+    if (
+      other &&
+      other.partnerId === b.id &&
+      at -
+        (g.relationships?.[JSON.stringify([b.id, other.id].sort())]?.lastAt ??
+          0) >=
+        CONFIG.socialSeconds * 1000
+    ) {
+      b.activity = "Esperando companhia";
+      return;
+    }
+  }
+  b.partnerId = undefined;
+  if (!urgent && b.needs.social < (b.traits.includes("Solitário") ? 45 : 80)) {
+    const peers = g.bixins
+      .filter(
+        (o) =>
+          o.id !== b.id &&
+          !o.partnerId &&
+          !o.path.length &&
+          o.needs.satiety >= 35 &&
+          o.needs.hydration >= 35 &&
+          o.needs.energy >= 25 &&
+          o.needs.health >= 50 &&
+          at -
+            (g.relationships?.[JSON.stringify([b.id, o.id].sort())]?.lastAt ??
+              0) >=
+            CONFIG.socialSeconds * 1000 &&
+          (!n || ![n.a, n.b].includes(o.id)),
+      )
+      .sort(
+        (x, y) =>
+          affinity(g, b.id, y.id) +
+          compatibility(b, y) * 4 +
+          ([b.parentA, b.parentB].includes(y.id) ? 20 : 0) -
+          (affinity(g, b.id, x.id) +
+            compatibility(b, x) * 4 +
+            ([b.parentA, b.parentB].includes(x.id) ? 20 : 0)),
+      );
+    for (const other of peers) {
+      const points = [
+        { x: other.x + 1, y: other.y },
+        { x: other.x - 1, y: other.y },
+        { x: other.x, y: other.y + 1 },
+        { x: other.x, y: other.y - 1 },
+      ].filter(
+        (p) =>
+          !g.bixins.some((o) => o.id !== b.id && o.x === p.x && o.y === p.y),
+      );
+      const options = points
+        .map((p) => ({ p, path: pathfind(g, b, p) }))
+        .filter((o) => o.path.length || (o.p.x === b.x && o.p.y === b.y))
+        .sort((x, y) => x.path.length - y.path.length);
+      if (!options[0]) continue;
+      b.partnerId = other.id;
+      other.partnerId = b.id;
+      b.targetId = other.targetId = undefined;
+      b.path = options[0].path;
+      b.activity = "Procurando companhia";
+      other.activity = "Esperando companhia";
+      return;
+    }
+  }
   const candidates = g.items
     .filter((i) => {
       const used = g.bixins.filter(
@@ -224,9 +333,11 @@ export function chooseActivity(g: Game, b: Bixin, at: number) {
           100 -
           b.needs[need] +
           (need === "hydration" && b.needs.hydration < 30 ? 100 : 0) +
-          (species[b.species].trait === "Preguiçoso" && need === "energy"
-            ? 8
-            : 0) -
+          (b.traits.includes("Preguiçoso") && need === "energy" ? 8 : 0) +
+          (b.traits.includes("Guloso") && need === "satiety" ? 10 : 0) +
+          (b.traits.includes("Brincalhão") && need === "fun" ? 10 : 0) +
+          (b.traits.includes("Organizado") && need === "hygiene" ? 8 : 0) +
+          stableRandom(`${b.id}:${i.id}:${Math.floor(at / 20000)}`)() * 4 -
           (options[0]?.path.length ?? 0) * 0.25,
       };
     })
@@ -262,9 +373,10 @@ export function simulate(g: Game, now: number) {
     for (const b of g.bixins) {
       for (const n of Object.keys(decay) as Need[]) {
         const rate =
-          n === "social" && species[b.species].trait === "Solitário"
+          n === "social" && b.traits.includes("Solitário")
             ? 0.5
-            : decay[n];
+            : decay[n] *
+              (n === "energy" ? 1 + (b.genome?.energyBias ?? 0) * 0.03 : 1);
         b.needs[n] = Math.max(0, Math.min(100, b.needs[n] - rate * h));
       }
       if (b.needs.satiety < 10 || b.needs.hydration < 10)
@@ -322,6 +434,7 @@ export function simulate(g: Game, now: number) {
       }
       chooseActivity(g, b, t);
     }
+    tickColony(g, t, event);
   }
   g.lastSimulated = t;
   if (end > stop) {
@@ -372,6 +485,7 @@ export function hatch(g: Game, id: string, now: number) {
   if (!e || e.readyAt === null || now < e.readyAt)
     throw Error("Esse ovo ainda está se preparando.");
   if (g.bixins.length >= g.capacity) throw Error("Seu refúgio está cheio.");
+  const identity = wildIdentity(e.species, `${g.seed}:${e.id}`);
   const b: Bixin = {
     id: `bixin-${e.id}`,
     species: e.species,
@@ -392,9 +506,15 @@ export function hatch(g: Game, id: string, now: number) {
     activity: "Conhecendo o mundo",
     path: [],
     careAt: 0,
-    role: g.bixins.length % 2 ? "B" : "A",
-    traits: [species[e.species].trait, "Curioso", "Carinhoso"],
+    role: e.role ?? identity.role,
+    traits: e.traits ?? identity.traits,
     origin: e.origin ?? species[e.species].regionKey,
+    parentA: e.parentA,
+    parentB: e.parentB,
+    genome: e.genome ?? identity.genome,
+    variant: e.variant,
+    genderLabel: "Identidade livre",
+    lastBredAt: 0,
   };
   g.bixins.push(b);
   g.eggs = g.eggs.filter((o) => o.id !== id);
@@ -403,7 +523,12 @@ export function hatch(g: Game, id: string, now: number) {
     event(g, `${species[e.species].name} entrou para sua Bixinpédia.`, now);
   }
   g.discoveryCounts![e.species] = (g.discoveryCounts![e.species] ?? 0) + 1;
-  event(g, `${b.name} nasceu! Que bom ter você por aqui.`, now);
+  event(
+    g,
+    `${b.name} nasceu! Que bom ter você por aqui.${b.variant === "aurora" ? " Uma variante aurora iluminou o cantinho!" : ""}`,
+    now,
+    true,
+  );
   updateMissions(g, now);
   return b;
 }

@@ -87,10 +87,10 @@ describe("Fase 4 — construir e crescer", () => {
     expect(g.credits).toBe(321);
     expect(g.bixins).toHaveLength(1);
     expect(g.items).toHaveLength(4);
-    expect(g.schemaVersion).toBe(2);
+    expect(g.schemaVersion).toBe(3);
   });
   it("mantém o kit com somente quatro objetos após ampliar o catálogo para 16", () => {
-    expect(Object.keys(items)).toHaveLength(16);
+    expect(Object.keys(items)).toHaveLength(17);
     expect(createGame(start, 2).items).toHaveLength(4);
   });
   it("valida todas as células de uma estrutura grande e seus acessos", () => {
@@ -384,6 +384,8 @@ describe("Fase 5 — explorar e colecionar", () => {
     for (const s of Object.keys(species) as Species[]) {
       const g = createGame(start, 3);
       g.eggs[0].species = s;
+      // Model a legacy egg without a preassigned identity for the original species.
+      delete g.eggs[0].traits;
       g.eggs[0].readyAt = start;
       const b = hatch(g, "first-egg", start);
       expect(b.name).toBe(species[s].defaultName);

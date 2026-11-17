@@ -1,5 +1,7 @@
 # Verificação da versão 0.1
 
+Registro histórico das entregas; a versão atual está na seção **Versão 1.0 — Fases 6 e 7**, ao final.
+
 - TypeScript estrito: passou.
 - Testes unitários: 15 passaram. Incluem colisão, entrada livre, BFS, prioridade de água, incubação, nascimento único, consumo/cooldown de cuidados, limites de necessidades, cuidado gentil, determinismo, renda sem repetição e validação de origem pública/externa.
 - Build de produção Next.js: passou.
@@ -26,3 +28,18 @@ A entrega é uma primeira fatia jogável, não o MVP 1.0 completo. Os sistemas f
 - Expedição real de Caatinga: oito minutos aguardados, ovo recebido, segundo resgate bloqueado e incubação regular com prazo exato de 90 minutos e rejeição de nascimento antecipado. O prazo completo de 90 minutos não foi aguardado; seu limite é coberto pelas funções puras.
 - 100 colônias por 14 dias virtuais: sem saldo negativo ou perda irreversível; ver docs/BALANCE.md.
 - Build de produção local concluído com TypeScript e geração das rotas. Verificação final no Edge passou: imagens, desktop/mobile e API sem sessão (401), sem erros JavaScript. Prévia privada atualizada: **READY**, confirmado pela API da Vercel, ambiente staging, commit de código 6ff485c028dbba9621c18c25506499096b65c3b0. URL: https://bixins-7eifnqtd7-danilo-freitas-souza.vercel.app/ . Alias estável: https://bixins-danilo-freitas-souza.vercel.app/ . Nova origem registrada no Neon Auth. A proteção e o limite de verificação HTTP remota descritos acima permanecem.
+
+## Versão 1.0 — Fases 6 e 7
+
+- 68 testes de regras passaram: migração, encontros por rotas, urgência de cuidados, conflitos com brinquedo real, amizade, reprodução não instantânea, saúde/idade/afinidade/parentesco, vagas/recursos, cooldown individual, herança, chance aurora, linhagem, cancelamento/pausa, objetivos e marcos. Coberturas anteriores de economia, geometria e origem permanecem.
+- Integração no Neon: três preparos concorrentes geraram uma intenção; sincronizações concorrentes geraram um ovo e um único débito de 12 porções; nascimentos concorrentes geraram um filhote; parentesco/genoma persistiram após transferência de progenitor. Isolamento entre proprietários e teto de 12 sincronizações/minuto passaram. Somente novos lançamentos do extrato foram gravados.
+- Regressão econômica no Neon passou novamente: compra idempotente, carteira sem saldo negativo, ração única, objetivo/expansão únicos, coordenadas preservadas, melhorias, transferência, resgate e auditoria do extrato.
+- E2E autenticado no build de produção passou: comprar/instalar ninho pelos controles normais, preparar casal sem ovo instantâneo, recarregar intenção, geração offline, único consumo, bloqueio por 24h, incubação regular com prazo de 5.400.000 ms e rejeição antecipada, nascimento, genoma e nomes dos pais na ficha. A segunda conta fictícia foi restaurada em finally.
+- Limite desse E2E: idade dos adultos, intervalo offline e conclusão da incubação usam somente a fixture SQL isolada; 10 minutos de aconchego e 90 de incubação não foram aguardados integralmente em tempo real. Não há endpoint de aceleração/saldo na aplicação.
+- Build final de produção e TypeScript passaram, incluindo a correção de iluminação. A checagem final no Edge passou novamente com os sete grupos de verificações visuais/HTTP.
+- Verificação visual no build de produção: 44 imagens carregadas, dia/noite/chuva, larguras 360/390/768, 404 acolhedor e nenhum erro JavaScript. Retratos/linhagem e mobile revisados por capturas. Foi identificado e corrigido um retângulo de iluminação noturna em telas largas.
+- Economia de bateria e redução de movimentos persistiram após recarregar; Escape fechou o diálogo. API sem sessão devolveu 401 com no-store; pedidos inválidos/grandes deram 400/413, IDs estrangeiros foram recusados e cabeçalhos de segurança foram conferidos.
+- Simulação atualizada: 100 colônias × 14 dias, cerca de 205 segundos, saldo mínimo C$ 2.688 e saúde mínima 35, sem perda irreversível. Perfis e limites estão em BALANCE.md; reprodução é coberta pelos cenários dedicados.
+- Checagem inicial de cotas sem avisos e plano Neon confirmado por API; contadores e limite da consulta Vercel estão em MONITORING.md. Sem agendamento, plano pago ou alteração de cobrança.
+- Revisão automática interrompeu uma tentativa de build por limite de uso (não por julgar a ação insegura). Após o usuário pedir continuidade, a mesma ação foi retomada pela revisão normal, sem contornar a aprovação.
+- Publicação privada 1.0: em andamento. A proteção e o limite de verificação HTTP remota descritos nas entregas anteriores permanecem.

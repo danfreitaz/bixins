@@ -6,6 +6,8 @@ import { rng, validPlacement, pathfind } from "@/game/engine";
 import { items, type ItemKey } from "@/game/config";
 import { contains, dimensions } from "@/game/geometry";
 import { ZoomIn, ZoomOut, LocateFixed } from "lucide-react";
+import { environment } from "@/game/colony";
+import { dataUri, portraitSvg } from "@/game/art";
 export type Placement = {
   kind: "item" | "egg";
   id: string;
@@ -19,6 +21,8 @@ type Props = {
   onSelect: (id: string, kind: "bixin" | "item" | "egg") => void;
   reduced: boolean;
   demo?: boolean;
+  battery?: boolean;
+  now?: number;
 };
 export default function Terrain({
   game,
@@ -27,10 +31,28 @@ export default function Terrain({
   onSelect,
   reduced,
   demo = false,
+  battery = false,
+  now = game.lastSimulated,
 }: Props) {
   const ref = useRef<HTMLCanvasElement>(null);
-  const latest = useRef({ game, placement, onPlace, onSelect, reduced });
-  latest.current = { game, placement, onPlace, onSelect, reduced };
+  const latest = useRef({
+    game,
+    placement,
+    onPlace,
+    onSelect,
+    reduced,
+    battery,
+    now,
+  });
+  latest.current = {
+    game,
+    placement,
+    onPlace,
+    onSelect,
+    reduced,
+    battery,
+    now,
+  };
   const camera = useRef({ zoom: 1, x: 0, y: 0 });
   const pointer = useRef<{
     x: number;
@@ -251,13 +273,20 @@ export default function Terrain({
     const draw = (ms: number) => {
       if (!alive) return;
       frame = requestAnimationFrame(draw);
-      if (document.hidden || ms - last < (latest.current.reduced ? 90 : 32))
+      if (
+        document.hidden ||
+        ms - last <
+          (latest.current.battery ? 83 : latest.current.reduced ? 90 : 32)
+      )
         return;
       const dt = Math.min(0.12, (ms - last) / 1000);
       last = ms;
       const { game: g, placement: pl, reduced: quiet } = latest.current;
       const box = canvas.getBoundingClientRect();
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const dpr = Math.min(
+        latest.current.battery ? 1 : 2,
+        window.devicePixelRatio || 1,
+      );
       if (
         canvas.width !== Math.round(box.width * dpr) ||
         canvas.height !== Math.round(box.height * dpr)
@@ -469,25 +498,57 @@ export default function Terrain({
                 (walking ? 3 : 1.2);
             ctx.save();
             ctx.translate(p.x, p.y + bounce);
-            const age = (Date.now() - b.bornAt) / 3600000;
-            const bodyScale = age < 6 ? 0.8 : age < 24 ? 0.9 : 1;
+            const age = (latest.current.now - b.bornAt) / 3600000;
+            const bodyScale =
+              (age < 6 ? 0.8 : age < 24 ? 0.9 : 1) *
+              (b.genome?.size === "fofucho"
+                ? 1.07
+                : b.genome?.size === "pequeno"
+                  ? 0.94
+                  : 1);
             ctx.scale(bodyScale, bodyScale);
             if (walking && next && next.x < v.x) ctx.scale(-1, 1);
-            image(
-              `${b.species}-${walking ? "idle" : sleeping ? "sleep" : b.activity === "Comendo" ? "eat" : b.activity === "Bebendo" ? "drink" : b.activity === "Brincando" ? "play" : "idle"}`,
-              -34,
-              -58,
-              68,
-              68,
-            );
+            const action = walking
+              ? "idle"
+              : b.activity === "Comendo"
+                ? "eat"
+                : b.activity === "Bebendo"
+                  ? "drink"
+                  : b.activity === "Brincando"
+                    ? "play"
+                    : "idle";
+            const artKey = `individual-${b.id}-${sleeping}-${action}`;
+            if (!imgs[artKey]) {
+              const im = new Image();
+              im.src = dataUri(portraitSvg(b, sleeping, action));
+              imgs[artKey] = im;
+            }
+            image(artKey, -34, -58, 68, 68);
             ctx.restore();
             ctx.font = '600 12px "Segoe UI",sans-serif';
             ctx.textAlign = "center";
+            const nameWidth = ctx.measureText(b.name).width + 12;
+            round(p.x - nameWidth / 2, p.y + 11, nameWidth, 18, 8, "#fff9e8dc");
             ctx.fillStyle = "#43583b";
             ctx.fillText(b.name, p.x, p.y + 24);
             if (sleeping) {
               ctx.font = "14px serif";
               ctx.fillText("z z", p.x + 28, p.y - 48);
+            }
+            if (
+              [
+                "Conversando",
+                "Aconchegando o ninho",
+                "Disputando a bolinha",
+              ].includes(b.activity)
+            ) {
+              ctx.font = "18px serif";
+              ctx.fillStyle = "#b66e80";
+              ctx.fillText(
+                b.activity === "Disputando a bolinha" ? "?!" : "♡",
+                p.x + 24,
+                p.y - 44,
+              );
             }
           },
         })),
@@ -599,12 +660,32 @@ export default function Terrain({
           n % 3 ? "#f3cfb4" : "#b4a4cf",
         );
       }
-      if (!quiet)
+      if (!quiet && !latest.current.battery)
         for (let n = 0; n < 7; n++) {
           const x = 250 + (Math.sin(ms / 9000 + n * 4) * 0.5 + 0.5) * 700,
             y = 260 + (Math.cos(ms / 7000 + n * 5) * 0.5 + 0.5) * 290;
           ellipse(x, y, 2, 2, "#fff6c2a0");
         }
+      const weather = environment(latest.current.now);
+      if (weather.night) {
+        ctx.save();
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.fillStyle = "#24375346";
+        ctx.fillRect(0, 0, box.width, box.height);
+        ctx.restore();
+        ellipse(1000 + dx, 110, 24, 24, "#fff4c4");
+        ellipse(1010 + dx, 103, 22, 22, "#879781");
+      }
+      if (weather.rain) {
+        ellipse(355, 515, 27, 6, "#87b8c25c");
+        ellipse(740 + dx, 400, 22, 5, "#87b8c25c");
+        if (!quiet && !latest.current.battery)
+          for (let n = 0; n < 45; n++) {
+            const x = (n * 127 + ms * 0.025) % scene().width;
+            const y = (n * 83 + ms * 0.14) % scene().height;
+            line([x, y, x - 3, y + 10], "#6f9ba66b", 1.4);
+          }
+      }
     };
     frame = requestAnimationFrame(draw);
     return () => {
@@ -624,7 +705,7 @@ export default function Terrain({
         aria-label="Seu terreno ilustrado. Arraste para mover a câmera; use a lista de objetos para construir pelo teclado."
       />
       <div className="world-label">
-        <span className="sun-dot" /> Solzinho de boas-vindas <span>·</span>{" "}
+        <span className="sun-dot" /> {environment(now).label} <span>·</span>{" "}
         {game.width > 20 ? "Terreninho" : "Quintal"}
       </div>
       {!demo && (

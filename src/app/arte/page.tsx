@@ -13,7 +13,7 @@ export default function ArtPage() {
       <h1 style={{ margin: "35px 0 10px" }}>
         Pequenos, fantásticos e autorais.
       </h1>
-      <p>Prancha visual · Primeira coleção · Versão 0.2</p>
+      <p>Prancha visual · Primeira coleção · Versão 1.0</p>
       <div
         className="item-grid"
         style={{ gridTemplateColumns: "repeat(3,1fr)" }}

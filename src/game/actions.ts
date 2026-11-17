@@ -20,6 +20,7 @@ import {
   updateMissions,
 } from "./progression";
 import type { Game } from "./types";
+import { breedingReason, wildIdentity } from "./colony";
 const xy = {
   x: z.number().int().min(0).max(43),
   y: z.number().int().min(0).max(27),
@@ -28,6 +29,13 @@ const itemKeys = Object.keys(items) as [ItemKey, ...ItemKey[]],
   speciesKeys = Object.keys(species) as [Species, ...Species[]],
   regionKeys = Object.keys(regions) as [RegionKey, ...RegionKey[]];
 export const actionSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("prepare-breeding"),
+    a: z.string().max(100),
+    b: z.string().max(100),
+    itemId: z.string().max(100),
+  }),
+  z.object({ type: z.literal("cancel-breeding") }),
   z.object({ type: z.literal("sync") }),
   z.object({
     type: z.literal("place"),
@@ -87,6 +95,49 @@ export function applyAction(
 ) {
   migrateGame(g);
   updateMissions(g, now);
+  if (a.type === "prepare-breeding") {
+    if (g.nest)
+      throw Error("Já há um ninho preparado. Cancele antes de trocar o casal.");
+    const first = g.bixins.find((b) => b.id === a.a),
+      second = g.bixins.find((b) => b.id === a.b);
+    const reason = breedingReason(g, first, second, now);
+    if (reason) throw Error(reason);
+    const nest = g.items.find(
+      (i) => i.id === a.itemId && i.key === "nest" && i.placed,
+    );
+    if (!nest)
+      throw Error("Instale um Ninho aconchegante antes de preparar o casal.");
+    g.nest = {
+      a: a.a,
+      b: a.b,
+      itemId: nest.id,
+      preparedAt: now,
+      settledAt: null,
+      seed: entropy ?? g.seed + g.version,
+    };
+    for (const b of [first!, second!]) {
+      b.path = [];
+      b.targetId = undefined;
+      b.partnerId = undefined;
+    }
+    event(
+      g,
+      `Um ninho foi preparado para ${first!.name} e ${second!.name}. Eles escolhem a hora de se aconchegar.`,
+      now,
+      true,
+    );
+  }
+  if (a.type === "cancel-breeding") {
+    if (!g.nest) throw Error("Não há um ninho preparado.");
+    const nestId = g.nest.itemId;
+    g.nest = null;
+    for (const b of g.bixins)
+      if (b.targetId === nestId) {
+        b.targetId = undefined;
+        b.path = [];
+      }
+    event(g, "O ninho voltou a descansar. Nenhuma ração foi consumida.", now);
+  }
   if (a.type === "buy-food") {
     if (g.food + CONFIG.foodPackSize > CONFIG.maxFoodReserve)
       throw Error("Sua reserva de ração já está cheia.");
@@ -105,6 +156,7 @@ export function applyAction(
     if (!validPlacement(g, a.x, a.y, i.id, i.key, rotation))
       throw Error("Esse lugar está ocupado ou bloquearia um caminho.");
     Object.assign(i, { x: a.x, y: a.y, placed: true, rotation });
+    if (g.nest?.itemId === i.id) g.nest.settledAt = null;
     for (const b of g.bixins) {
       b.path = [];
       b.targetId = undefined;
@@ -115,6 +167,7 @@ export function applyAction(
     const i = g.items.find((i) => i.id === a.id);
     if (!i) throw Error("Objeto não encontrado.");
     i.placed = false;
+    if (g.nest?.itemId === i.id) g.nest = null;
     for (const b of g.bixins) {
       b.path = [];
       b.targetId = undefined;
@@ -271,6 +324,7 @@ export function applyAction(
       x: 0,
       y: 0,
       origin: species[a.species].regionKey,
+      ...wildIdentity(a.species, entropy ?? `${g.seed}:${key}`),
     });
     event(g, `Um ovo de ${species[a.species].name} chegou à sua ovoteca.`, now);
   }
@@ -311,6 +365,7 @@ export function applyAction(
         x: 0,
         y: 0,
         origin: e.region,
+        ...wildIdentity(e.reward.species, e.seed),
       });
     if (e.reward.credits)
       money(
@@ -358,18 +413,24 @@ export function applyAction(
       price: quote.price,
     });
     g.bixins = g.bixins.filter((o) => o.id !== a.id);
+    if (g.nest && [g.nest.a, g.nest.b].includes(a.id)) g.nest = null;
+    for (const other of g.bixins)
+      if (other.partnerId === a.id) other.partnerId = undefined;
     event(
       g,
       `${b.name} seguiu para outro refúgio por C$ ${quote.price}. Sua história fica no diário.`,
       now,
+      true,
     );
   }
   updateMissions(g, now);
 }
 export function publicSnapshot(g: Game): Game {
-  if (!g.expedition) return g;
   return {
     ...g,
-    expedition: { ...g.expedition, seed: 0, reward: { credits: 0 } },
+    nest: g.nest ? { ...g.nest, seed: 0 } : null,
+    expedition: g.expedition
+      ? { ...g.expedition, seed: 0, reward: { credits: 0 } }
+      : null,
   };
 }

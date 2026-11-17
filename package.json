@@ -1,6 +1,6 @@
 {
   "name": "bixins",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1",
@@ -10,7 +10,9 @@
     "test": "vitest run",
     "db:migrate": "tsx --env-file=.env.local scripts/migrate.ts",
     "balance": "tsx scripts/simulate-balance.ts",
-    "test:integration": "node --conditions=react-server --env-file=.env.local --import tsx scripts/phase-integration.ts"
+    "test:integration": "node --conditions=react-server --env-file=.env.local --import tsx scripts/phase-integration.ts",
+    "test:colony": "node --conditions=react-server --env-file=.env.local --import tsx scripts/colony-integration.ts",
+    "check:quotas": "node --conditions=react-server --env-file=.env.local --import tsx scripts/check-quotas.ts"
   },
   "dependencies": {
     "@neon/auth": "latest",
