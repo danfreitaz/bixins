@@ -52,3 +52,9 @@ A entrega é uma primeira fatia jogável, não o MVP 1.0 completo. Os sistemas f
 - A proteção SSO da Vercel foi removida por autorização explícita. Requisição anônima ao endereço estável respondeu HTTP 200, com a página BIXINS e sem login Vercel. O login do jogo e a autorização por proprietário continuam obrigatórios para acessar o progresso.
 - Endereço público: https://bixins-danilo-freitas-souza.vercel.app/ . O estado anterior de distribuição privada registrado acima é histórico; não se aplica mais ao acesso atual.
 - O upload ao GitHub não configurou integração automática de deploy. A aplicação pública continua na versão 1.0 já validada e publicada na Vercel.
+
+## Endereço curto
+
+- Por solicitação do criador, o endereço principal divulgado passa a ser https://bixins.vercel.app/ . Alias atribuído à versão 1.0 já publicada, sem alteração do progresso.
+- HTTP 200 anônimo confirmado; login e logout reais passaram no novo domínio com a conta fictícia autorizada. Origem registrada no Neon Auth.
+- Em futuras publicações manuais, manter o alias bixins.vercel.app apontado para o novo deployment aprovado.

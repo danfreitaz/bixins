@@ -4,7 +4,7 @@ Jogo web de criaturas fantásticas brasileiras com Next.js/TypeScript, Canvas 2D
 
 ## Jogar
 
-O [BIXINS está aberto ao público](https://bixins-danilo-freitas-souza.vercel.app/), sem exigir conta Vercel. Cada jogador cria uma conta BIXINS para guardar seu refúgio. A publicação atual e os resultados ficam em [verificações](docs/VERIFICATION.md).
+O [BIXINS está aberto ao público](https://bixins.vercel.app/), sem exigir conta Vercel. Cada jogador cria uma conta BIXINS para guardar seu refúgio. A publicação atual e os resultados ficam em [verificações](docs/VERIFICATION.md).
 
 - `/`: refúgio persistente por conta. Começa vazio com C$ 600, um ovo e quatro objetos na caixa.
 - `/arte`: nove espécies, ovos, estados de descanso e 17 objetos ilustrados.
