@@ -15,5 +15,5 @@
 - Probabilidades por região ativa: 61% comum, 25% incomum, 10% raro e 4% recursos. Os 6% das faixas futuras épica/lendária foram redistribuídos para comum. Os sete destinos aparecem; somente três cobram e operam.
 - Venda NPC só permite adultos/veteranos saudáveis, preserva o último Bixin e exige confirmação de nome/preço. O histórico guarda a instância transferida e os dados de origem. Não há mercado entre jogadores.
 - Configurações de som/movimento/bateria são locais; progresso é guardado no Neon. Segredos não estão no Git nem no bundle.
-- A prévia Vercel permanece protegida. A autorização anterior para publicar e usar contas fictícias foi mantida; não foram criados links compartilháveis para contornar essa proteção.
+- Após a entrega privada 1.0, o criador autorizou explicitamente abrir o site a todos. A proteção SSO da Vercel foi removida; o login BIXINS e o isolamento por proprietário continuam ativos. Não foram criados links compartilháveis temporários.
 - Fases 6 e 7 entregues para o piloto fechado. Ninho e parentesco são validados no servidor, genética usa 45/45/10 e aurora 0,5%. Detalhes de condições, herança, migração e limites em PHASES_6_7.md.

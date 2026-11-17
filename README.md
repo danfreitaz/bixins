@@ -1,10 +1,10 @@
 # BIXINS · versão 1.0
 
-Jogo web de criaturas fantásticas brasileiras com Next.js/TypeScript, Canvas 2D, SVG autoral, PostgreSQL Neon e autenticação gerenciada. As fases 6 e 7 do [GDD](BIXINS_GDD_Codex.md) completam o MVP para testes fechados.
+Jogo web de criaturas fantásticas brasileiras com Next.js/TypeScript, Canvas 2D, SVG autoral, PostgreSQL Neon e autenticação gerenciada. As fases 6 e 7 do [GDD](BIXINS_GDD_Codex.md) completam o MVP 1.0.
 
 ## Jogar
 
-A [prévia privada](https://bixins-danilo-freitas-souza.vercel.app/) exige acesso Vercel e, dentro do jogo, uma conta BIXINS. A proteção não foi removida. A publicação atual e os resultados ficam em [verificações](docs/VERIFICATION.md).
+O [BIXINS está aberto ao público](https://bixins-danilo-freitas-souza.vercel.app/), sem exigir conta Vercel. Cada jogador cria uma conta BIXINS para guardar seu refúgio. A publicação atual e os resultados ficam em [verificações](docs/VERIFICATION.md).
 
 - `/`: refúgio persistente por conta. Começa vazio com C$ 600, um ovo e quatro objetos na caixa.
 - `/arte`: nove espécies, ovos, estados de descanso e 17 objetos ilustrados.
@@ -60,6 +60,6 @@ Para testar prazos de reprodução/incubação com eficiência, a fixture isolad
 
 ## Infraestrutura
 
-Neon usa a branch development e Managed Better Auth. Toda mutação usa proprietário da sessão, horário do PostgreSQL, bloqueio transacional e idempotência. Seeds de ninho/expedição ficam ocultas enquanto futuras. A Vercel recebe código/arte e variáveis criptografadas. O fluxo completo foi conferido localmente com Neon real; a URL remota é verificada pelo estado READY sem criar links de acesso temporário.
+Neon usa a branch development e Managed Better Auth. Toda mutação usa proprietário da sessão, horário do PostgreSQL, bloqueio transacional e idempotência. Seeds de ninho/expedição ficam ocultas enquanto futuras. A Vercel recebe código/arte e variáveis criptografadas. O fluxo completo foi conferido localmente com Neon real; após a abertura autorizada, a página pública respondeu HTTP 200 em uma requisição anônima, sem login Vercel.
 
-Há commits locais; o conector GitHub disponível não cria o repositório remoto. Veja [fases 6 e 7](docs/PHASES_6_7.md), [decisões](docs/DECISIONS.md), [arte](docs/ART_BIBLE.md), [operação/cotas](docs/MONITORING.md) e [verificações](docs/VERIFICATION.md).
+Repositório: [danfreitaz/bixins](https://github.com/danfreitaz/bixins). Segredos, credenciais de testes e artefatos locais não são enviados ao GitHub. O envio ao GitHub, por si só, não configura publicação automática na Vercel. Veja [fases 6 e 7](docs/PHASES_6_7.md), [decisões](docs/DECISIONS.md), [arte](docs/ART_BIBLE.md), [operação/cotas](docs/MONITORING.md) e [verificações](docs/VERIFICATION.md).
