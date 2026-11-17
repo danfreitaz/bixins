@@ -25,9 +25,22 @@ import {
   Sun,
 } from "lucide-react";
 import Terrain, { type Placement } from "./Terrain";
+import {
+  ConstructionPanel,
+  ItemPanel,
+  MissionsPanel,
+  ShopPanel,
+  CollectionPanel,
+  ExplorationPanel,
+  TransferControls,
+} from "./PhasePanels";
+import { charm, stageOf } from "@/game/progression";
+import { dimensions } from "@/game/geometry";
 import { authClient } from "@/lib/auth/client";
 import {
   CONFIG,
+  rarities,
+  starters,
   items,
   species,
   needLabels,
@@ -44,7 +57,8 @@ const nav = [
   { id: "collection", title: "Bixinpédia", icon: BookOpen },
   { id: "diary", title: "Diário", icon: Leaf },
 ] as const;
-type Tab = (typeof nav)[number]["id"] | "settings" | "shop" | "explore";
+type Tab =
+  (typeof nav)[number]["id"] | "settings" | "shop" | "explore" | "missions";
 function Art({
   src,
   alt = "",
@@ -277,6 +291,14 @@ export default function GameClient() {
       previous?.focus();
     };
   }, [tab, placement, selected]);
+  useEffect(() => {
+    if (!message) return;
+    const id = setTimeout(
+      () => setMessage((current) => (current === message ? "" : current)),
+      7000,
+    );
+    return () => clearTimeout(id);
+  }, [message]);
   const choose = (id: string, kind: "bixin" | "item" | "egg") => {
     setSelected({ id, kind });
     if (kind === "bixin")
@@ -288,7 +310,12 @@ export default function GameClient() {
     const ok = await act(
       placement.kind === "egg"
         ? { type: "incubate", id: placement.id, ...p }
-        : { type: "place", id: placement.id, ...p },
+        : {
+            type: "place",
+            id: placement.id,
+            rotation: placement.rotation ?? 0,
+            ...p,
+          },
     );
     if (ok) {
       setPlacement(null);
@@ -304,16 +331,11 @@ export default function GameClient() {
       ? game?.items.find((i) => i.id === selected.id)
       : undefined;
   const remaining = (at: number) => Math.max(0, Math.ceil((at - now) / 1000));
-  const stage = (b: Bixin) => {
-    const h = (now - b.bornAt) / 3600000;
-    return h < 6
-      ? "Filhote"
-      : h < 24
-        ? "Juvenil"
-        : h < 120
-          ? "Adulto"
-          : "Veterano";
-  };
+  const remainingLabel = (at: number) =>
+    remaining(at) < 60
+      ? remaining(at) + "s"
+      : Math.ceil(remaining(at) / 60) + " min";
+  const stage = (b: Bixin) => stageOf(b, now);
   if (loading)
     return (
       <main className="loading">
@@ -346,7 +368,7 @@ export default function GameClient() {
             refúgio começa com você.
           </p>
           <div className="welcome-creatures">
-            {(Object.keys(species) as Species[]).map((s) => (
+            {starters.map((s) => (
               <Art
                 key={s}
                 src={dataUri(creatureSvg(s))}
@@ -528,8 +550,10 @@ export default function GameClient() {
               <House size={19} />
             </span>
             <div>
-              <span>NÍVEL 1</span>
-              <strong>Pequeno refúgio</strong>
+              <span>NÍVEL {game.level ?? 1}</span>
+              <strong>
+                {(game.level ?? 1) >= 2 ? "Terreninho" : "Pequeno refúgio"}
+              </strong>
             </div>
           </div>
           <div className="colony-stats">
@@ -544,14 +568,22 @@ export default function GameClient() {
               </strong>
             </span>
           </div>
+          <div className="hud-charm">
+            <Sparkles size={14} /> Charme{" "}
+            <strong>{Math.round(charm(game))}/100</strong>
+          </div>
           <div className="mission">
             <span className="eyebrow">PEQUENOS COMEÇOS</span>
             <h3>O primeiro de muitos.</h3>
+            <button className="mission-open" onClick={() => setTab("missions")}>
+              Objetivos e recompensas <ArrowRight size={13} />
+            </button>
             <p>Cada cantinho começa com um pouquinho de carinho.</p>
             <button onClick={() => setTab("build")}>
               <span
                 className={
-                  game.items.filter((i) => i.placed).length >= 4
+                  game.items.filter((i) => i.placed && i.id.startsWith("kit-"))
+                    .length >= 4
                     ? "task-check done"
                     : "task-check"
                 }
@@ -621,7 +653,7 @@ export default function GameClient() {
           <button className="incubation-note" onClick={() => setTab("eggs")}>
             <Egg size={18} />
             {remaining(activeEgg.readyAt!) > 0
-              ? `Um novo amigo chega em ${remaining(activeEgg.readyAt!)}s`
+              ? `Um novo amigo chega em ${remainingLabel(activeEgg.readyAt!)}`
               : "Tem alguém pronto para conhecer você!"}
             <ChevronRight size={16} />
           </button>
@@ -664,6 +696,13 @@ export default function GameClient() {
         >
           <ShoppingBag size={21} />
           <span>Lojinha</span>
+        </button>
+        <button
+          onClick={() => setTab("missions")}
+          className={tab === "missions" ? "active" : ""}
+        >
+          <Check size={21} />
+          <span>Objetivos</span>
         </button>
         <button onClick={() => setTab("explore")}>
           <Map size={21} />
@@ -721,7 +760,7 @@ export default function GameClient() {
               aria-label="Coluna"
               type="number"
               min="0"
-              max="19"
+              max={game.width - 1}
               value={kx}
               onChange={(e) => setKx(Number(e.target.value))}
             />
@@ -732,11 +771,26 @@ export default function GameClient() {
               aria-label="Linha"
               type="number"
               min="0"
-              max="13"
+              max={game.height - 1}
               value={ky}
               onChange={(e) => setKy(Number(e.target.value))}
             />
           </label>
+          {placement.kind === "item" &&
+            items[placement.key as ItemKey].width !==
+              items[placement.key as ItemKey].height && (
+              <button
+                className="button small"
+                onClick={() =>
+                  setPlacement({
+                    ...placement,
+                    rotation: placement.rotation ? 0 : 1,
+                  })
+                }
+              >
+                Girar 90°
+              </button>
+            )}
           <button
             className="button primary small"
             disabled={pending}
@@ -796,7 +850,8 @@ export default function GameClient() {
                   />
                 </div>
                 <span className="eyebrow">
-                  {species[bixin.species].name} · COMUM
+                  {species[bixin.species].name} ·{" "}
+                  {rarities[species[bixin.species].rarity].label.toUpperCase()}
                 </span>
                 <h2>{bixin.name}</h2>
                 <p>
@@ -888,141 +943,64 @@ export default function GameClient() {
                 >
                   Me surpreenda com um nome
                 </button>
+                <TransferControls
+                  game={game}
+                  bixin={bixin}
+                  now={now}
+                  pending={pending}
+                  act={act}
+                  onSold={() => {
+                    setSelected(null);
+                    setTab("home");
+                  }}
+                />
                 <p className="fineprint">
                   Compatibilidade reprodutiva: {bixin.role} · Reprodução em uma
                   próxima etapa.
                 </p>
               </>
             ) : selectedItem ? (
-              <>
-                <Art
-                  className="panel-art"
-                  src={dataUri(itemSvg(selectedItem.key))}
-                />
-                <span className="eyebrow">
-                  {items[selectedItem.key].category}
-                </span>
-                <h2>{items[selectedItem.key].name}</h2>
-                <p>{items[selectedItem.key].description}</p>
-                {selectedItem.key === "food" && (
-                  <>
-                    <p>
-                      Ração no comedouro: {selectedItem.stock}/12 · Reserva:{" "}
-                      {game.food}
-                    </p>
-                    <button
-                      className="button primary"
-                      disabled={pending}
-                      onClick={() =>
-                        act({ type: "refill", id: selectedItem.id })
-                      }
-                    >
-                      Reabastecer com ração básica
-                    </button>
-                  </>
-                )}
-                <div className="panel-actions">
-                  <button
-                    className="button"
-                    onClick={() => {
-                      setPlacement({
-                        kind: "item",
-                        id: selectedItem.id,
-                        key: selectedItem.key,
-                      });
-                      setSelected(null);
-                    }}
-                  >
-                    Mover
-                  </button>
-                  <button
-                    className="button"
-                    disabled={pending}
-                    onClick={async () => {
-                      if (await act({ type: "store", id: selectedItem.id }))
-                        setSelected(null);
-                    }}
-                  >
-                    Guardar na caixa
-                  </button>
-                </div>
-              </>
+              <ItemPanel
+                item={selectedItem}
+                game={game}
+                pending={pending}
+                act={act}
+                onPlace={(p) => {
+                  setPlacement(p);
+                  setSelected(null);
+                  setTab("home");
+                }}
+                onStored={() => setSelected(null)}
+              />
             ) : (
               <>
+                {tab === "missions" && (
+                  <MissionsPanel
+                    game={game}
+                    now={now}
+                    pending={pending}
+                    act={act}
+                  />
+                )}
                 {tab === "build" && (
-                  <>
-                    <span className="eyebrow">DEIXE COM A SUA CARA</span>
-                    <h2>Um lugar para cada carinho.</h2>
-                    <p>
-                      Seu kit chegou. Escolha um objeto e depois um cantinho no
-                      terreno.
-                    </p>
-                    <div className="item-grid">
-                      {game.items
-                        .filter((i) => !i.placed)
-                        .map((i) => (
-                          <button
-                            className="item-card"
-                            key={i.id}
-                            onClick={() => {
-                              setPlacement({
-                                kind: "item",
-                                id: i.id,
-                                key: i.key,
-                              });
-                              setTab("home");
-                            }}
-                          >
-                            <Art src={dataUri(itemSvg(i.key))} />
-                            <strong>{items[i.key].name}</strong>
-                            <span>{items[i.key].category} · 1 × 1</span>
-                            <small>
-                              Colocar no terreno <Plus size={14} />
-                            </small>
-                          </button>
-                        ))}
-                    </div>
-                    {!game.items.some((i) => !i.placed) && (
-                      <p className="empty-note">
-                        Tudo encontrou seu lugar! Toque em um objeto no terreno
-                        para mover ou guardar.
-                      </p>
-                    )}
-                    <h3>Já no seu cantinho</h3>
-                    <div className="object-list">
-                      {game.items
-                        .filter((i) => i.placed)
-                        .map((i) => (
-                          <button
-                            key={i.id}
-                            onClick={() => choose(i.id, "item")}
-                          >
-                            <Art src={dataUri(itemSvg(i.key))} />
-                            <span>
-                              {items[i.key].name}
-                              <small>
-                                Célula {i.x}, {i.y}
-                              </small>
-                            </span>
-                            <ChevronRight size={16} />
-                          </button>
-                        ))}
-                    </div>
-                    <button
-                      className="text-button"
-                      onClick={() => setTab("shop")}
-                    >
-                      Visitar a lojinha <ArrowRight size={15} />
-                    </button>
-                  </>
+                  <ConstructionPanel
+                    game={game}
+                    onPlace={(p) => {
+                      setPlacement(p);
+                      setTab("home");
+                      setSelected(null);
+                    }}
+                    onSelect={(id) => choose(id, "item")}
+                    openShop={() => setTab("shop")}
+                  />
                 )}
                 {tab === "eggs" && (
                   <>
                     <span className="eyebrow">PEQUENAS GRANDES SURPRESAS</span>
                     <h2>Tem vida nova a caminho.</h2>
                     <p>
-                      Seu primeiro ovinho leva só um minutinho. O ninho é por
-                      nossa conta.
+                      O primeiro ovo leva um minuto; os demais, 90 minutos. O
+                      ninho é por nossa conta.
                     </p>
                     {game.eggs.map((e) => (
                       <div className="egg-card" key={e.id}>
@@ -1035,7 +1013,10 @@ export default function GameClient() {
                             ? "Ovo de boas-vindas"
                             : `Ovo de ${species[e.species].name}`}
                         </h3>
-                        <span>{species[e.species].region} · Comum</span>
+                        <span>
+                          {species[e.species].region} ·{" "}
+                          {rarities[species[e.species].rarity].label}
+                        </span>
                         {!e.readyAt ? (
                           <button
                             className="button primary"
@@ -1055,13 +1036,13 @@ export default function GameClient() {
                             <div className="incubation-progress">
                               <i
                                 style={{
-                                  width: `${Math.min(100, 100 * (1 - remaining(e.readyAt) / (e.first ? 60 : 5400)))}%`,
+                                  width: `${Math.min(100, 100 * (1 - remaining(e.readyAt) / (e.first ? CONFIG.firstEggSeconds : CONFIG.eggSeconds)))}%`,
                                 }}
                               />
                             </div>
                             <p>
                               {remaining(e.readyAt) > 0
-                                ? `Tem alguém se mexendo aqui dentro… ${remaining(e.readyAt)}s`
+                                ? `Tem alguém se mexendo aqui dentro… ${remainingLabel(e.readyAt)}`
                                 : "Parece que está na hora!"}
                             </p>
                             <button
@@ -1086,43 +1067,7 @@ export default function GameClient() {
                     )}
                   </>
                 )}
-                {tab === "collection" && (
-                  <>
-                    <span className="eyebrow">CADA UM, UM MUNDINHO</span>
-                    <h2>Sua Bixinpédia.</h2>
-                    <p>
-                      {game.discoveries.length} de 3 espécies descobertas nesta
-                      primeira coleção.
-                    </p>
-                    <div className="collection-grid">
-                      {(Object.keys(species) as Species[]).map((s) => {
-                        const known = game.discoveries.includes(s);
-                        return (
-                          <article key={s}>
-                            <Art
-                              className={known ? "" : "undiscovered"}
-                              src={dataUri(creatureSvg(s))}
-                            />
-                            <span className="eyebrow">{species[s].region}</span>
-                            <h3>
-                              {known ? species[s].name : "Um novo mistério"}
-                            </h3>
-                            <p>
-                              {known
-                                ? species[s].description
-                                : "Um dia, um ovinho vai apresentar vocês."}
-                            </p>
-                            <small>
-                              {known
-                                ? "Comum · Descoberto"
-                                : "Ainda não descoberto"}
-                            </small>
-                          </article>
-                        );
-                      })}
-                    </div>
-                  </>
-                )}
+                {tab === "collection" && <CollectionPanel game={game} />}
                 {tab === "diary" && (
                   <>
                     <span className="eyebrow">
@@ -1171,55 +1116,20 @@ export default function GameClient() {
                   </>
                 )}
                 {tab === "shop" && (
-                  <>
-                    <span className="eyebrow">COISINHAS PARA SEU CANTINHO</span>
-                    <h2>A lojinha do refúgio.</h2>
-                    <p>
-                      Mais conforto, mais brincadeira. Saldo: C$ {game.credits}.
-                    </p>
-                    <div className="item-grid">
-                      {(Object.keys(items) as ItemKey[]).map((key) => (
-                        <article className="item-card" key={key}>
-                          <Art src={dataUri(itemSvg(key))} />
-                          <strong>{items[key].name}</strong>
-                          <span>{items[key].description}</span>
-                          <button
-                            className="button primary small"
-                            disabled={
-                              pending || game.credits < items[key].price
-                            }
-                            onClick={() => act({ type: "buy", key })}
-                          >
-                            Comprar · C$ {items[key].price}
-                          </button>
-                        </article>
-                      ))}
-                    </div>
-                    <p className="fineprint">
-                      Os objetos comprados chegam à caixa de entregas. Comércio
-                      de ovos e transferências de Bixins serão adicionados em
-                      uma próxima etapa.
-                    </p>
-                  </>
+                  <ShopPanel
+                    game={game}
+                    now={now}
+                    pending={pending}
+                    act={act}
+                  />
                 )}
                 {tab === "explore" && (
-                  <>
-                    <span className="eyebrow">UM BRASIL DE POSSIBILIDADES</span>
-                    <h2>O mundo é maior que a cerca.</h2>
-                    <p>
-                      As expedições estão sendo preparadas para uma próxima
-                      etapa. Por enquanto, cuide do seu primeiro cantinho.
-                    </p>
-                    <div className="region-list">
-                      {["Mata Atlântica", "Caatinga", "Cerrado"].map((r, i) => (
-                        <article key={r} className={`region region-${i}`}>
-                          <Leaf size={40} />
-                          <h3>{r}</h3>
-                          <span>Em breve · Expedições ainda indisponíveis</span>
-                        </article>
-                      ))}
-                    </div>
-                  </>
+                  <ExplorationPanel
+                    game={game}
+                    now={now}
+                    pending={pending}
+                    act={act}
+                  />
                 )}
                 {tab === "settings" && (
                   <>
@@ -1281,7 +1191,7 @@ export default function GameClient() {
                       Exportar meu refúgio em JSON
                     </button>
                     <p className="fineprint">
-                      BIXINS · Versão 0.1 · Primeira fatia jogável. Seus dados
+                      BIXINS · Versão 0.2 · Construção e descobertas. Seus dados
                       ficam guardados na sua conta. A exportação serve para
                       consulta.
                     </p>

@@ -1824,3 +1824,596 @@ input {
   animation: none !important;
   transition: none !important;
 }
+
+/* Construction and discovery — phases 4 and 5 */
+.panel-copy {
+  font-size: 12px;
+  color: #859078;
+  line-height: 1.8;
+  margin: 12px 0 20px;
+}
+.rarity-badge {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 800;
+  margin: 6px 0;
+}
+.feature-facts {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin: 15px 0 20px;
+}
+.feature-facts span {
+  padding: 7px 10px;
+  background: #eef0dd;
+  border: 1px solid #dfe5cd;
+  border-radius: 20px;
+  color: #758466;
+  font-size: 10px;
+}
+.category-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 16px 0;
+}
+.category-tabs button,
+.region-picker button {
+  padding: 9px 12px;
+  border: 1px solid #dfe3cd;
+  border-radius: 20px;
+  font-size: 10px;
+  background: #f4f3e6;
+  color: #8a9278;
+  min-height: 36px;
+}
+.category-tabs button.active,
+.region-picker button.active {
+  background: #dde7cc;
+  color: #607b53;
+  border-color: #b8cba4;
+}
+.item-card > p {
+  font-size: 10px;
+  color: #8c947a;
+  line-height: 1.7;
+  min-height: 36px;
+  margin: 0 0 14px;
+}
+.item-card .button {
+  margin-top: auto;
+}
+.egg-offers .item-card > span {
+  margin-bottom: 6px;
+}
+.notice {
+  background: #f0e9d3;
+  border: 1px solid #e1d5b3;
+  border-radius: 11px;
+  padding: 13px 15px;
+  font-size: 11px !important;
+  line-height: 1.8;
+  color: #998960 !important;
+  margin: 15px 0 !important;
+}
+.mission-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 25px;
+}
+.mission-cards > article {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 16px 12px;
+  border: 1px solid #e0e4cd;
+  border-radius: 13px;
+  background: #f4f3e5;
+}
+.mission-cards h3 {
+  font-size: 15px;
+  margin: 0 0 6px;
+}
+.mission-cards p {
+  font-size: 10px;
+  line-height: 1.6;
+  color: #93987e;
+}
+.mission-cards strong {
+  font-size: 11px;
+  color: #9d8b57;
+  display: block;
+  margin-top: 6px;
+}
+.mission-cards article > div {
+  flex: 1;
+}
+.mission-symbol {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  background: #e4ebd3;
+  border-radius: 50%;
+  color: #8ca579;
+  flex-shrink: 0;
+}
+.mission-cards article.claimed {
+  opacity: 0.65;
+}
+.mission-cards .button {
+  font-size: 9px;
+  padding: 7px 9px;
+}
+.expansion-card {
+  text-align: center;
+  background: linear-gradient(150deg, #e4ebd6, #f6eed6);
+  border: 1px solid #d8dfc2;
+  border-radius: 18px;
+  padding: 28px 23px;
+  margin: 28px 0;
+}
+.expansion-card > svg {
+  color: #8fa073;
+  margin-bottom: 15px;
+}
+.expansion-card .eyebrow {
+  justify-content: center;
+  font-size: 9px;
+}
+.expansion-card h3 {
+  font-size: 22px;
+  margin: 13px 0 !important;
+}
+.expansion-card p {
+  font-size: 11px;
+  line-height: 1.9;
+  color: #8e977b;
+  margin-bottom: 20px;
+}
+.expansion-card small {
+  display: block;
+  font-size: 9px;
+  color: #a2a387;
+  margin-top: 16px;
+}
+.upgrade-button {
+  width: 100%;
+  margin-top: 12px;
+  background: #ece6d6;
+  color: #8c7c62;
+}
+.hud-charm {
+  display: flex;
+  gap: 8px;
+  font-size: 10px;
+  color: #929a7e;
+  border-top: 1px dashed #dce1cc;
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.hud-charm strong {
+  margin-left: auto;
+  font-weight: 800;
+  color: #7e8b68;
+}
+.mission button.mission-open {
+  font-size: 9px;
+  color: #6e8c60;
+  background: #eaf0db;
+  border-radius: 7px;
+  white-space: normal;
+  padding: 8px;
+  margin: 12px 0;
+}
+.transfer-controls {
+  margin-top: 30px;
+  border-top: 1px dashed #dbdfc8;
+  padding-top: 6px;
+}
+.transfer-controls > p {
+  font-size: 11px;
+  line-height: 1.8;
+  color: #90977f;
+  margin: 0 0 15px;
+}
+.sale-confirmation {
+  padding: 18px;
+  border: 1px solid #e3cdb9;
+  border-radius: 13px;
+  background: #f5ead9;
+}
+.sale-confirmation > svg {
+  color: #bc9474;
+  margin-bottom: 10px;
+}
+.sale-confirmation p {
+  font-size: 12px;
+  line-height: 1.9;
+  margin-bottom: 15px;
+}
+.sale-confirmation strong {
+  color: #897050;
+}
+.sale-confirmation .button {
+  width: 100%;
+}
+.sale-confirmation .text-button {
+  margin: auto;
+}
+.transfer-history p {
+  border-bottom: 1px solid #e2e4d1;
+  font-size: 11px;
+  padding: 13px 0;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  color: #979780;
+}
+.transfer-history span {
+  margin-left: auto;
+  color: #7e966b;
+}
+.brazil-map {
+  position: relative;
+  width: 100%;
+  height: 350px;
+  background: radial-gradient(ellipse, #e9efdc, #f8f5e8 70%);
+  border: 1px solid #e2e5d0;
+  border-radius: 19px;
+  margin: 24px 0 14px;
+}
+.brazil-map > svg {
+  position: absolute;
+  inset: 12px;
+  height: calc(100% - 24px);
+  width: calc(100% - 24px);
+}
+.brazil-map > button {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 44px;
+  min-height: 44px;
+}
+.brazil-map button > span {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #fdf8e7;
+  color: #92a079;
+  border: 2px solid #a9bc90;
+  box-shadow: 0 2px 7px #6e82522b;
+}
+.brazil-map button.active > span {
+  background: #7f9c70;
+  color: #fff6d5;
+  border-color: #6e8e5f;
+}
+.brazil-map button.future {
+  opacity: 0.6;
+}
+.brazil-map button.future > span {
+  border-color: #bebca0;
+}
+.brazil-map small {
+  font-size: 8px;
+  background: #fff9e9e0;
+  border-radius: 6px;
+  padding: 3px 6px;
+  color: #7c876a;
+  white-space: nowrap;
+}
+.map-note {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  font-size: 8px;
+  color: #a6ac93;
+}
+.region-picker {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin: 15px 0 24px;
+}
+.region-picker button {
+  padding: 7px 10px;
+  min-height: 32px;
+  font-size: 9px;
+}
+.destination {
+  border: 1px solid #dfe3cc;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #f5f3e6;
+}
+.destination > img {
+  display: block;
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+}
+.destination > div {
+  padding: 23px;
+}
+.destination h3 {
+  font-size: 28px;
+  margin: 12px 0 !important;
+}
+.destination p {
+  color: #8c9479;
+  font-size: 11px;
+  line-height: 1.9;
+}
+.destination .button {
+  width: 100%;
+}
+.destination .fineprint {
+  font-size: 9px;
+  margin-top: 15px;
+}
+.destination-species {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 17px 0 23px;
+}
+.destination-species > span {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+.destination-species img {
+  width: 75px;
+}
+.destination-species small {
+  font-size: 9px;
+  color: #939c80;
+}
+.journey {
+  border: 1px solid #d6dfc3;
+  background: #edf0df;
+  border-radius: 17px;
+  overflow: hidden;
+  margin: 20px 0;
+}
+.journey > img {
+  display: block;
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+}
+.journey > div {
+  padding: 20px;
+}
+.journey h3 {
+  font-size: 22px;
+  margin: 12px 0 !important;
+}
+.journey p {
+  font-size: 10px;
+  color: #929b7f;
+  margin: 13px 0;
+}
+.journey .eyebrow {
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+.journey .incubation-progress {
+  margin-top: 15px;
+}
+.journey .button {
+  width: 100%;
+}
+.bottom-nav {
+  max-width: 100%;
+}
+.bottom-nav button {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+.collection-grid .rarity-badge {
+  margin: 0;
+}
+.art-page .item-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.art-page .building-art-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.art-page .item-card p {
+  min-height: 0;
+}
+@media (max-width: 1100px) {
+  .bottom-nav button {
+    padding-left: 11px;
+    padding-right: 11px;
+    font-size: 9px;
+    gap: 6px;
+  }
+}
+@media (max-width: 760px) {
+  .bottom-nav {
+    justify-content: flex-start;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+    scrollbar-color: #d4dec4 transparent;
+  }
+  .bottom-nav button,
+  .bottom-nav button:nth-last-child(1),
+  .bottom-nav button:nth-last-child(2) {
+    display: flex;
+    flex-shrink: 0;
+    padding: 10px 12px;
+    min-width: 60px;
+  }
+  .bottom-nav .nav-divider {
+    display: none;
+  }
+  .hud-charm {
+    font-size: 8px;
+    gap: 6px;
+    margin-top: 9px;
+    padding-top: 8px;
+  }
+  .hud-charm svg {
+    width: 11px;
+  }
+  .mission-cards > article {
+    gap: 9px;
+    padding: 14px 10px;
+    flex-wrap: wrap;
+  }
+  .mission-cards .button {
+    margin-left: auto;
+  }
+  .mission-cards h3 {
+    font-size: 14px;
+  }
+  .mission-symbol {
+    width: 28px;
+    height: 28px;
+  }
+  .expansion-card {
+    padding: 23px 18px;
+  }
+  .category-tabs button {
+    font-size: 9px;
+    padding: 8px 10px;
+    min-height: 36px;
+  }
+  .brazil-map {
+    height: 310px;
+  }
+  .brazil-map small {
+    font-size: 7px;
+    padding: 3px 4px;
+  }
+  .destination > img {
+    height: 150px;
+  }
+  .destination > div {
+    padding: 19px;
+  }
+  .destination h3 {
+    font-size: 25px;
+  }
+  .journey h3 {
+    font-size: 20px;
+  }
+  .destination-species img {
+    width: 65px;
+  }
+  .art-page {
+    padding: 24px !important;
+  }
+  .art-page .item-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  .art-page .item-card {
+    min-width: 0;
+  }
+  .art-page .item-card img {
+    max-width: 100%;
+    height: auto;
+  }
+  .art-page .item-card h2 {
+    font-size: 20px;
+  }
+  .art-page .building-art-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  .placement-bar {
+    max-height: 190px;
+    overflow: auto;
+  }
+  .game-panel .notice {
+    font-size: 10px !important;
+  }
+  .transfer-controls h3 {
+    font-size: 20px;
+  }
+  .world-label {
+    max-width: calc(100% - 175px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .game-footer {
+    padding-bottom: 16px;
+  }
+}
+
+.toast {
+  pointer-events: none;
+}
+.toast button {
+  pointer-events: auto;
+}
+.app:has(.placement-bar) .toast {
+  bottom: 120px;
+}
+@media (max-width: 760px) {
+  .app:has(.placement-bar) .toast {
+    bottom: 205px;
+  }
+}
+
+@media (max-width: 760px) {
+  .demo-heading {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .demo-heading > div {
+    flex: 1 1 100%;
+  }
+  .demo-heading > button {
+    flex: 1;
+  }
+}
+
+.food-supply {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f1efdd;
+  border: 1px solid #dfe1c7;
+  border-radius: 12px;
+  padding: 14px;
+  margin: 14px 0 21px;
+}
+.food-supply > div {
+  flex: 1;
+}
+.food-supply strong {
+  font-size: 12px;
+}
+.food-supply p {
+  font-size: 9px;
+  color: #92977b;
+  line-height: 1.7;
+  margin-top: 5px;
+}
+.food-supply button {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+@media (max-width: 760px) {
+  .food-supply {
+    flex-wrap: wrap;
+  }
+  .food-supply button {
+    margin-left: auto;
+  }
+}

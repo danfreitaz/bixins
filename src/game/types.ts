@@ -1,4 +1,4 @@
-import type { ItemKey, Need, Species } from "./config";
+import type { ItemKey, Need, Species, RegionKey } from "./config";
 export type Point = { x: number; y: number };
 export type Bixin = Point & {
   id: string;
@@ -12,18 +12,25 @@ export type Bixin = Point & {
   careAt: number;
   role: "A" | "B";
   traits: string[];
+  origin?: RegionKey;
+  parentA?: string;
+  parentB?: string;
+  variant?: string;
 };
 export type OwnedItem = Point & {
   id: string;
   key: ItemKey;
   placed: boolean;
   stock: number;
+  level?: number;
+  rotation?: 0 | 1;
 };
 export type Egg = Point & {
   id: string;
   species: Species;
   readyAt: number | null;
   first: boolean;
+  origin?: RegionKey;
 };
 export type GameEvent = { id: string; at: number; text: string };
 export type Ledger = {
@@ -33,13 +40,30 @@ export type Ledger = {
   balance: number;
   kind: string;
 };
+export type Expedition = {
+  id: string;
+  region: RegionKey;
+  startedAt: number;
+  endsAt: number;
+  seed: number;
+  reward: { species?: Species; credits: number; item?: ItemKey };
+};
+export type MissionState = {
+  completedAt: number | null;
+  claimedAt: number | null;
+};
+export type Transfer = { id: string; bixin: Bixin; at: number; price: number };
 export type Game = {
+  schemaVersion?: number;
+  eventSequence?: number;
+  xp?: number;
   version: number;
   name: string;
   credits: number;
   width: number;
   height: number;
   capacity: number;
+  level?: number;
   lastSimulated: number;
   lastIncome: number;
   food: number;
@@ -51,4 +75,11 @@ export type Game = {
   events: GameEvent[];
   ledger: Ledger[];
   discoveries: Species[];
+  missions?: Record<string, MissionState>;
+  expedition?: Expedition | null;
+  expeditionsCompleted?: number;
+  careCount?: number;
+  incomeCycles?: number;
+  transfers?: Transfer[];
+  discoveryCounts?: Partial<Record<Species, number>>;
 };

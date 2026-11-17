@@ -17,3 +17,12 @@
 - GitHub: sem repositório remoto conectado; há commits locais.
 
 A entrega é uma primeira fatia jogável, não o MVP 1.0 completo. Os sistemas futuros permanecem documentados no roteiro.
+
+## Versão 0.2 — Fases 4 e 5
+
+- 38 testes unitários passaram, incluindo os casos novos de construções maiores, rotação, capacidade, cache de caminhos, melhorias, objetivos únicos, expansão, probabilidades, ovos, expedições e vendas.
+- Testes transacionais no Neon passaram com propriedades fictícias isoladas: compra idempotente, carteira concorrente sem saldo negativo, ração com débito/entrega única, missão única, expansão única, coordenadas preservadas, melhoria, venda com histórico e resgate único de expedição.
+- Interface desktop/mobile: objetivos, categorias da loja, compra de objeto, ração, colocação, rotação, melhoria, nove espécies da coleção, navegação móvel, 43 imagens na prancha e prévia de terreno expandido. Sem erros JavaScript.
+- Expedição real de Caatinga: oito minutos aguardados, ovo recebido, segundo resgate bloqueado e incubação regular com prazo exato de 90 minutos e rejeição de nascimento antecipado. O prazo completo de 90 minutos não foi aguardado; seu limite é coberto pelas funções puras.
+- 100 colônias por 14 dias virtuais: sem saldo negativo ou perda irreversível; ver docs/BALANCE.md.
+- Build de produção local concluído com TypeScript e geração das rotas. Verificação final no Edge passou: imagens, desktop/mobile e API sem sessão (401), sem erros JavaScript. Atualização da prévia privada: em andamento.

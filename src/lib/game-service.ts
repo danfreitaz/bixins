@@ -4,6 +4,7 @@ import { db } from "./db/client";
 import { createGame, simulate } from "@/game/engine";
 import { applyAction, type Action } from "@/game/actions";
 import type { Game } from "@/game/types";
+import { migrateGame } from "@/game/progression";
 export async function transact(owner: string, action: Action, key: string) {
   return db.begin(async (tx) => {
     const initial = createGame(Date.now(), randomInt(1, 2147483647));
@@ -13,7 +14,7 @@ export async function transact(owner: string, action: Action, key: string) {
     const [clock] =
       await tx`SELECT extract(epoch from clock_timestamp())*1000 as now`;
     const now = Math.floor(Number(clock.now));
-    const g = row.state as Game;
+    const g = migrateGame(row.state as Game);
     const [duplicate] =
       await tx`SELECT kind FROM game_actions WHERE owner_id=${owner} AND idempotency_key=${key}`;
     if (duplicate) {
@@ -30,7 +31,7 @@ export async function transact(owner: string, action: Action, key: string) {
         );
     }
     simulate(g, now);
-    applyAction(g, action, now, key);
+    applyAction(g, action, now, key, randomInt(1, 2147483647));
     g.version++;
     g.ledger = g.ledger.slice(0, 100);
     await tx`UPDATE properties SET state=${tx.json(g)},credits=${g.credits},version=${g.version},updated_at=now() WHERE owner_id=${owner}`;

@@ -1,9 +1,11 @@
 import { auth } from "@/lib/auth/server";
 import { db } from "@/lib/db/client";
 import { transact } from "@/lib/game-service";
-import { actionSchema } from "@/game/actions";
+import { actionSchema, publicSnapshot } from "@/game/actions";
+import { migrateGame } from "@/game/progression";
+import type { Game } from "@/game/types";
 import { z } from "zod";
-import { sameOrigin } from '@/lib/same-origin';
+import { sameOrigin } from "@/lib/same-origin";
 export const runtime = "nodejs";
 export async function GET() {
   const { data: s } = await auth.getSession();
@@ -15,7 +17,7 @@ export async function GET() {
   const [r] =
     await db`SELECT state FROM properties WHERE owner_id=${s.user.id}`;
   return Response.json(
-    { state: r?.state ?? null },
+    { state: r?.state ? publicSnapshot(migrateGame(r.state as Game)) : null },
     { headers: { "Cache-Control": "no-store" } },
   );
 }
@@ -35,7 +37,10 @@ export async function POST(req: Request) {
       .object({ action: actionSchema, idempotencyKey: z.uuid() })
       .parse(await req.json());
     const result = await transact(s.user.id, body.action, body.idempotencyKey);
-    return Response.json(result, { headers: { "Cache-Control": "no-store" } });
+    return Response.json(
+      { ...result, state: publicSnapshot(result.state) },
+      { headers: { "Cache-Control": "no-store" } },
+    );
   } catch (error) {
     if (error instanceof z.ZodError)
       return Response.json(

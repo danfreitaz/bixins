@@ -1,6 +1,6 @@
 {
   "name": "bixins",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1",
@@ -8,7 +8,9 @@
     "start": "next start --hostname 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "db:migrate": "tsx --env-file=.env.local scripts/migrate.ts"
+    "db:migrate": "tsx --env-file=.env.local scripts/migrate.ts",
+    "balance": "tsx scripts/simulate-balance.ts",
+    "test:integration": "node --conditions=react-server --env-file=.env.local --import tsx scripts/phase-integration.ts"
   },
   "dependencies": {
     "@neon/auth": "latest",
@@ -31,6 +33,6 @@
   },
   "type": "module",
   "engines": {
-    "node": ">=24"
+    "node": "24.x"
   }
 }

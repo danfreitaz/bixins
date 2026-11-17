@@ -3,12 +3,14 @@ import { useEffect, useRef, useState } from "react";
 import type { Game, Point } from "@/game/types";
 import { manifest } from "@/game/assets/manifest";
 import { rng, validPlacement, pathfind } from "@/game/engine";
-import type { ItemKey } from "@/game/config";
+import { items, type ItemKey } from "@/game/config";
+import { contains, dimensions } from "@/game/geometry";
 import { ZoomIn, ZoomOut, LocateFixed } from "lucide-react";
 export type Placement = {
   kind: "item" | "egg";
   id: string;
   key: ItemKey | "egg";
+  rotation?: 0 | 1;
 };
 type Props = {
   game: Game;
@@ -142,13 +144,23 @@ export default function Terrain({
       const i = imgs[key];
       if (i?.complete && i.naturalWidth) ctx.drawImage(i, x, y, w, h);
     };
+    const scene = () => ({
+      width: 1200 + (latest.current.game.width - 20) * 40,
+      height: 850 + (latest.current.game.height - 14) * 32,
+    });
     const screenPoint = (x: number, y: number) => {
+      const size = scene();
       const box = canvas.getBoundingClientRect();
       const scale =
-        Math.min(box.width / 1200, box.height / 850) * camera.current.zoom;
+        Math.min(box.width / scene().width, box.height / scene().height) *
+        camera.current.zoom;
       return {
-        x: (x - box.left - box.width / 2 - camera.current.x) / scale + 600,
-        y: (y - box.top - box.height / 2 - camera.current.y) / scale + 425,
+        x:
+          (x - box.left - box.width / 2 - camera.current.x) / scale +
+          size.width / 2,
+        y:
+          (y - box.top - box.height / 2 - camera.current.y) / scale +
+          size.height / 2,
       };
     };
     const hit = (e: PointerEvent) => {
@@ -210,9 +222,7 @@ export default function Terrain({
         select(b.id, "bixin");
         return;
       }
-      const item = g.items.find(
-        (i) => i.placed && i.x === cell.x && Math.abs(i.y - cell.y) <= 1,
-      );
+      const item = g.items.find((i) => i.placed && contains(i, cell));
       if (item) {
         select(item.id, "item");
         return;
@@ -263,15 +273,33 @@ export default function Terrain({
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, box.width, box.height);
       const scale =
-        Math.min(box.width / 1200, box.height / 850) * camera.current.zoom;
+        Math.min(box.width / scene().width, box.height / scene().height) *
+        camera.current.zoom;
       ctx.translate(
         box.width / 2 + camera.current.x,
         box.height / 2 + camera.current.y,
       );
       ctx.scale(scale, scale);
-      ctx.translate(-600, -425);
-      ellipse(600, 510, 567, 294, "#b4c99c");
-      ellipse(610, 530, 530, 260, "#bfd19e");
+      const dx = (g.width - 20) * 40,
+        dy = (g.height - 14) * 32,
+        right = 1000 + dx,
+        bottom = 648 + dy,
+        gate = 600 + dx / 2;
+      ctx.translate(-scene().width / 2, -scene().height / 2);
+      ellipse(
+        600 + dx / 2,
+        510 + dy / 2,
+        567 + dx / 2,
+        294 + dy / 2,
+        "#b4c99c",
+      );
+      ellipse(
+        610 + dx / 2,
+        530 + dy / 2,
+        530 + dx / 2,
+        260 + dy / 2,
+        "#bfd19e",
+      );
       // Layers of woodland frame the empty, buildable clearing.
       for (const [x, y, s, v] of [
         [125, 224, 1.25, 0],
@@ -283,17 +311,23 @@ export default function Terrain({
         [86, 422, 0.9, 1],
         [136, 581, 1.2, 0],
       ])
-        tree(x, y, s, v);
-      round(190, 198, 820, 472, 33, "#829d6a");
+        tree(x + (x > 800 ? dx : 0), y + (y > 600 ? dy : 0), s, v);
+      round(190, 198, 820 + dx, 472 + dy, 33, "#829d6a");
       round(190, 181, 820, 472, 33, "#c4d79e");
-      round(200, 192, 800, 456, 25, "#bbd493");
+      round(200, 192, 800 + dx, 456 + dy, 25, "#bbd493");
       const grass = ctx.createLinearGradient(0, 190, 0, 650);
       grass.addColorStop(0, "#c0d994");
       grass.addColorStop(0.6, "#b4d18b");
       grass.addColorStop(1, "#a9c784");
-      round(202, 196, 796, 450, 25, grass as unknown as string);
-      for (const d of details) {
-        if (d.x < 208 || d.x > 990 || d.y < 202 || d.y > 642) continue;
+      round(202, 196, 796 + dx, 450 + dy, 25, grass as unknown as string);
+      for (const original of details) {
+        const d = {
+          ...original,
+          x: 200 + ((original.x - 200) * (800 + dx)) / 800,
+          y: 200 + ((original.y - 200) * (448 + dy)) / 448,
+        };
+        if (d.x < 208 || d.x > right - 10 || d.y < 202 || d.y > bottom - 6)
+          continue;
         if (d.s > 0.87) {
           ellipse(d.x, d.y, 4, 1.4, "#e3e8b257");
           line(
@@ -328,24 +362,24 @@ export default function Terrain({
         line([-5, 15, 6, 15, 6, -35], "#b4956f", 2);
         ctx.restore();
       };
-      for (let x = 200; x <= 1000; x += 40) fence(x, 204);
-      for (let y = 236; y < 648; y += 32) {
+      for (let x = 200; x <= right; x += 40) fence(x, 204);
+      for (let y = 236; y < bottom; y += 32) {
         fence(200, y, true);
-        fence(1000, y, true);
+        fence(right, y, true);
       }
       if (pl) {
         ctx.strokeStyle = "#5d886630";
         ctx.lineWidth = 1;
-        for (let x = 200; x <= 1000; x += 40) {
+        for (let x = 200; x <= right; x += 40) {
           ctx.beginPath();
           ctx.moveTo(x, 200);
-          ctx.lineTo(x, 648);
+          ctx.lineTo(x, bottom);
           ctx.stroke();
         }
-        for (let y = 200; y <= 648; y += 32) {
+        for (let y = 200; y <= bottom; y += 32) {
           ctx.beginPath();
           ctx.moveTo(200, y);
-          ctx.lineTo(1000, y);
+          ctx.lineTo(right, y);
           ctx.stroke();
         }
       }
@@ -361,10 +395,28 @@ export default function Terrain({
         ...g.items
           .filter((i) => i.placed)
           .map((i) => ({
-            y: i.y,
+            y: i.y + dimensions(i).height,
             draw: () => {
-              const p = pos(i);
-              image(i.key, p.x - 35, p.y - 50, 70, 70);
+              const d = dimensions(i),
+                p = pos({
+                  x: i.x + (d.width - 1) / 2,
+                  y: i.y + (d.height - 1) / 2,
+                }),
+                size = Math.max(70, Math.max(d.width, d.height) * 34 + 12);
+              ctx.save();
+              ctx.translate(p.x, p.y);
+              if (i.rotation) ctx.rotate(Math.PI / 2);
+              image(i.key, -size / 2, -size * 0.8, size, size);
+              ctx.restore();
+              if ((i.level ?? 1) > 1) {
+                ellipse(
+                  p.x + size * 0.3,
+                  p.y - 10,
+                  4,
+                  4,
+                  (i.level ?? 1) === 3 ? "#ead289" : "#d6bfcc",
+                );
+              }
             },
           })),
         ...g.bixins.map((b) => ({
@@ -417,9 +469,12 @@ export default function Terrain({
                 (walking ? 3 : 1.2);
             ctx.save();
             ctx.translate(p.x, p.y + bounce);
+            const age = (Date.now() - b.bornAt) / 3600000;
+            const bodyScale = age < 6 ? 0.8 : age < 24 ? 0.9 : 1;
+            ctx.scale(bodyScale, bodyScale);
             if (walking && next && next.x < v.x) ctx.scale(-1, 1);
             image(
-              `${b.species}-${sleeping ? "sleep" : "idle"}`,
+              `${b.species}-${walking ? "idle" : sleeping ? "sleep" : b.activity === "Comendo" ? "eat" : b.activity === "Bebendo" ? "drink" : b.activity === "Brincando" ? "play" : "idle"}`,
               -34,
               -58,
               68,
@@ -446,9 +501,20 @@ export default function Terrain({
           p.x,
           p.y,
           pl.kind === "item" ? pl.id : undefined,
+          pl.kind === "item" ? (pl.key as ItemKey) : undefined,
+          pl.rotation ?? 0,
         );
         ctx.fillStyle = valid ? "#5d9b6d66" : "#d7727066";
-        ctx.fillRect(200 + p.x * 40, 200 + p.y * 32, 40, 32);
+        const d =
+          pl.kind === "item"
+            ? dimensions({ key: pl.key as ItemKey, rotation: pl.rotation })
+            : { width: 1, height: 1 };
+        ctx.fillRect(
+          200 + p.x * 40,
+          200 + p.y * 32,
+          d.width * 40,
+          d.height * 32,
+        );
         ctx.globalAlpha = 0.6;
         if (pl.kind === "item")
           image(pl.key, point.x - 35, point.y - 50, 70, 70);
@@ -462,18 +528,44 @@ export default function Terrain({
           );
         ctx.globalAlpha = 1;
       }
-      for (let x = 200; x <= 1000; x += 40) {
-        if (x >= 560 && x <= 640) continue;
-        fence(x, 650);
+      for (let x = 200; x <= right; x += 40) {
+        if (x >= gate - 40 && x <= gate + 40) continue;
+        fence(x, bottom + 2);
       }
       // The gate and a little hand-painted name board.
-      line([559, 649, 559, 608, 640, 608, 640, 649], "#b19468", 6);
-      line([565, 631, 633, 631, 568, 610, 633, 649], "#e6cda0", 6);
-      ellipse(633, 626, 3, 3, "#8a7457");
+      line(
+        [
+          gate - 41,
+          bottom + 1,
+          gate - 41,
+          bottom - 40,
+          gate + 40,
+          bottom - 40,
+          gate + 40,
+          bottom + 1,
+        ],
+        "#b19468",
+        6,
+      );
+      line(
+        [
+          gate - 35,
+          bottom - 17,
+          gate + 33,
+          bottom - 17,
+          gate - 32,
+          bottom - 38,
+          gate + 33,
+          bottom + 1,
+        ],
+        "#e6cda0",
+        6,
+      );
+      ellipse(gate + 33, bottom - 22, 3, 3, "#8a7457");
       for (let n = 0; n < 6; n++)
         ellipse(
-          600 + Math.sin(n * 5) * 17,
-          672 + n * 17,
+          gate + Math.sin(n * 5) * 17,
+          bottom + 24 + n * 17,
           14 + (n % 2) * 3,
           7,
           "#d1ccad",
@@ -485,7 +577,7 @@ export default function Terrain({
         [220, 782, 0.65, 0],
         [910, 804, 0.6, 1],
       ])
-        tree(x, y, s, v);
+        tree(x + (x > 800 ? dx : 0), y + (y > 600 ? dy : 0), s, v);
       const flower = (x: number, y: number, c: string) => {
         line([x, y, x, y - 15], "#719566", 2);
         for (let k = 0; k < 5; k++)
@@ -501,7 +593,11 @@ export default function Terrain({
       for (let n = 0; n < 25; n++) {
         const x = 170 + ((n * 97) % 900);
         const y = n % 2 ? 690 + ((n * 7) % 63) : 166 + ((n * 3) % 22);
-        flower(x, y, n % 3 ? "#f3cfb4" : "#b4a4cf");
+        flower(
+          x + (x > 800 ? dx : 0),
+          y + (y > 600 ? dy : 0),
+          n % 3 ? "#f3cfb4" : "#b4a4cf",
+        );
       }
       if (!quiet)
         for (let n = 0; n < 7; n++) {
@@ -529,7 +625,7 @@ export default function Terrain({
       />
       <div className="world-label">
         <span className="sun-dot" /> Solzinho de boas-vindas <span>·</span>{" "}
-        Quintal
+        {game.width > 20 ? "Terreninho" : "Quintal"}
       </div>
       {!demo && (
         <div className="camera-tools">

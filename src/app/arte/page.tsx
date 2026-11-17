@@ -3,14 +3,17 @@ import { creatureSvg, dataUri, eggSvg, itemSvg } from "@/game/art";
 import { species, items, type Species, type ItemKey } from "@/game/config";
 export default function ArtPage() {
   return (
-    <main style={{ maxWidth: 1100, margin: "auto", padding: 50 }}>
+    <main
+      className="art-page"
+      style={{ maxWidth: 1100, margin: "auto", padding: 50 }}
+    >
       <a className="brand" href="/">
         bixins<span>✿</span>
       </a>
       <h1 style={{ margin: "35px 0 10px" }}>
         Pequenos, fantásticos e autorais.
       </h1>
-      <p>Prancha visual · Primeira coleção · Versão 0.1</p>
+      <p>Prancha visual · Primeira coleção · Versão 0.2</p>
       <div
         className="item-grid"
         style={{ gridTemplateColumns: "repeat(3,1fr)" }}
@@ -41,7 +44,7 @@ export default function ArtPage() {
         ))}
       </div>
       <div
-        className="item-grid"
+        className="item-grid building-art-grid"
         style={{ gridTemplateColumns: "repeat(4,1fr)" }}
       >
         {(Object.keys(items) as ItemKey[]).map((k) => (

@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Terrain from "@/components/Terrain";
 import { createGame, hatch, chooseActivity, simulate } from "@/game/engine";
-import { species, type Species } from "@/game/config";
+import { species, starters, type Species } from "@/game/config";
 import type { Game } from "@/game/types";
 function example(): Game {
   const now = Date.now();
@@ -15,7 +15,7 @@ function example(): Game {
       y: [5, 5, 9, 9][i],
     }),
   );
-  (Object.keys(species) as Species[]).forEach((s, i) => {
+  starters.forEach((s, i) => {
     g.eggs.push({
       id: s,
       species: s,
@@ -60,7 +60,7 @@ export default function Demo() {
           Criar meu refúgio
         </a>
       </header>
-      <div className="game-heading">
+      <div className="game-heading demo-heading">
         <div>
           <span className="eyebrow">CONHEÇA A PRIMEIRA COLEÇÃO</span>
           <h1>
@@ -69,6 +69,25 @@ export default function Demo() {
         </div>
         <button className="button small" onClick={() => setReduced(!reduced)}>
           {reduced ? "Ativar animações" : "Reduzir movimentos"}
+        </button>
+        <button
+          className="button small"
+          onClick={() =>
+            setGame((g) =>
+              g
+                ? {
+                    ...g,
+                    width: g.width === 20 ? 24 : 20,
+                    height: g.width === 20 ? 16 : 14,
+                    capacity: g.width === 20 ? 10 : 6,
+                    level: g.width === 20 ? 2 : 1,
+                    version: g.version + 1,
+                  }
+                : g,
+            )
+          }
+        >
+          {game?.width === 24 ? "Ver Quintal" : "Ver Terreninho"}
         </button>
       </div>
       <section

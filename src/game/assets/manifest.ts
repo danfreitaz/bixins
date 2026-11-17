@@ -7,6 +7,9 @@ export const manifest = {
       {
         idle: dataUri(creatureSvg(k as Species)),
         sleep: dataUri(creatureSvg(k as Species, true)),
+        eat: dataUri(creatureSvg(k as Species, false, "eat")),
+        drink: dataUri(creatureSvg(k as Species, false, "drink")),
+        play: dataUri(creatureSvg(k as Species, false, "play")),
         egg: dataUri(eggSvg(k as Species)),
       },
     ]),

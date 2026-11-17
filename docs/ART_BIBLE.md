@@ -1,12 +1,23 @@
-# Bíblia visual — primeira coleção
+# Bíblia visual — coleção 0.2
 
-Arte autoral vetorial em `src/game/art.ts`, reutilizada nos retratos e no Canvas por meio do manifesto. Nenhuma imagem de personagem conhecido ou geração paga é necessária.
+Arte SVG autoral em src/game/art.ts e src/game/art-expansion.ts, reutilizada no Canvas e nos painéis pelo manifesto. As fontes Fredoka e Nunito são locais e têm suas licenças em public/fonts.
 
-- Musguito: corpo baixo de musgo, vários tufos arredondados e broto central, verde-oliva, barriga clara; temperamento preguiçoso.
-- Capinzim: corpo oval dourado, orelhas laterais largas, franja de capim em cinco pontas; temperamento brincalhão.
-- Espinim: corpo de pompom verde-sálvia, orelhas verticais, espinhos de feltro e flor lilás; temperamento tímido.
-- Olhos castanhos com reflexo, bochechas rosadas, patas curtas, contorno de 2–3 unidades. Formato 128×128, pivô no chão (64,112).
-- Comedouro em barro coral; bebedouro azul com água translúcida; cama de palha com manta sálvia; bola lilás de corda. Todos com sombra elíptica suave.
-- Terreno: árvore em camadas, grama com variações determinísticas, cerca de madeira clara, flores creme/lilás e pequenas pedras. Cores da UI derivadas do GDD.
+| Espécie   | Silhueta e paleta                                             |
+| --------- | ------------------------------------------------------------- |
+| Musguito  | Corpo baixo com tufos arredondados e broto verde-oliva.       |
+| Capinzim  | Oval dourado, orelhas laterais e franja de capim pontuda.     |
+| Espinim   | Pompom sálvia com espinhos de feltro e flor lilás.            |
+| Pingoçu   | Gota azul com topo curvo, patinhas curtas e braços laterais.  |
+| Bromeluz  | Corpo rosa, braços curvos e coroa de pétalas com miolo claro. |
+| Girassu   | Rosto dourado e orelhas grandes em pétalas.                   |
+| Cerrilume | Terracota, cauda longa curvada e manchas luminosas.           |
+| Xiquinho  | Cacto de braços altos, linhas claras e flor roxa.             |
+| Pedruxo   | Pedras arredondadas rosa-areia, topo e orelhas de seixo.      |
 
-Animação: respiração, balanço de caminhada, espelhamento horizontal seguro, olhos fechados no descanso, balanço de ovo. Movimento reduzido remove os movimentos decorativos. Próxima fase deve detalhar animações específicas de alimentação, água e brincadeira antes de expandir espécies.
+Formato-base 128×128, contorno de 2–3 unidades, sombra elíptica e pivô no chão. Estados: parado, dormir, comer, beber e brincar; caminhada usa interpolação, espelhamento seguro e balanço. Filhote/juvenil/adulto têm escala visual crescente. A opção de movimento reduzido remove balanços decorativos.
+
+Os 16 objetos têm desenhos próprios e materiais consistentes: barro, madeira, tecido, água e vegetação. O renderer respeita dimensões, rotação, sombra, profundidade e sinal de melhoria. A área realmente cresce ao expandir, preservando posições lógicas.
+
+Há paisagens ilustradas para as regiões e um mapa do Brasil propositalmente estilizado, acompanhado dos botões textuais dos sete destinos. Os quatro caminhos futuros têm identificação explícita de indisponibilidade.
+
+A prancha pública /arte mostra as nove espécies, seus ovos, estados de descanso e os 16 objetos. A rota /demonstracao oferece Quintal e Terreninho sem persistência.
